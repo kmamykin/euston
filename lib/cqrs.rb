@@ -1,3 +1,5 @@
+require 'active_support/concern'
+require 'ostruct'
 require 'uuid'
 
 module Cqrs

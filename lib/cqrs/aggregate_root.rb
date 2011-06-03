@@ -1,6 +1,6 @@
 module Cqrs
   module AggregateRoot
-    extend ActiveSupport::Concern
+    extend ::ActiveSupport::Concern
 
     module ClassMethods
       def applies event, version, &consumer
@@ -59,6 +59,7 @@ module Cqrs
       end
 
       def consume_command(headers, command)
+        headers = Cqrs::CommandHeaders.from_hash(headers) if headers.is_a?(Hash)
         return if committed_commands.include? headers.id
 
         @current_headers = headers
@@ -68,8 +69,9 @@ module Cqrs
       end
 
       def replay_event(headers, event)
+        headers = Cqrs::EventHeaders.from_hash(headers) if headers.is_a?(Hash)
         command = headers.command
-        committed_commands << command unless command.nil? || committed_commands.any? { |c| c[:id] == command[:id] }
+        committed_commands << command[:id] unless command.nil? || committed_commands.include?(command[:id])
 
         handle_event headers, event
         @initial_version = initial_version + 1
