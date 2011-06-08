@@ -1,6 +1,6 @@
 module Cqrs
   class AggregateCommandMap
-    class << self      
+    class << self
       def deliver_command(headers, command)
         mapping = @map.find { |m| m[:created_by][:type] == headers.type }
 
@@ -11,10 +11,12 @@ module Cqrs
           mapping = aggregate[:consumes].find { |k| k[:type] == headers.type }
 
           deliver_command_to_existing_aggregate aggregate, headers, command
-        elsif load_aggregate_for_command(mapping, headers, command).nil?
-          construct_new_aggregate mapping[:type], headers, command
+        else
+          aggregate = load_aggregate_for_command(mapping, headers, command)
+          aggregate = construct_new_aggregate(mapping[:type], headers, command) if aggregate.nil?
+          aggregate
         end
-      end      
+      end
 
       def map_command_as_aggregate_constructor(type, command, identifier, to_i = [])
         @map ||= []
@@ -22,7 +24,7 @@ module Cqrs
 
         if aggregate.nil?
           aggregate = { :type => type,
-                        :created_by => { :type => command, 
+                        :created_by => { :type => command,
                                          :identifier => identifier,
                                          :to_i => to_i },
                         :consumes => [] }
@@ -30,25 +32,25 @@ module Cqrs
           @map << aggregate
         end
       end
-      
+
       def map_command_as_aggregate_method(type, command, identifier, to_i = [])
         aggregate = get_aggregate type
         mappings = aggregate[:consumes]
-        
+
         unless mappings.any? { |m| m[:type] == command }
-          mappings << { :type => command, 
+          mappings << { :type => command,
                         :identifier => identifier,
                         :to_i => to_i }
         end
       end
-      
+
       private
 
       def construct_new_aggregate(type, headers, command)
         aggregate = type.new
         aggregate.consume_command headers, command
         aggregate
-      end      
+      end
 
       def deliver_command_to_existing_aggregate(mapping, headers, command)
         aggregate = load_aggregate_for_command mapping, headers, command
@@ -60,10 +62,10 @@ module Cqrs
         aggregate = @map.find { |a| a[:type] == type }
         aggregate
       end
-      
+
       def load_aggregate_for_command(mapping, headers, command)
         if mapping[:created_by][:type] == headers.type
-          identifier = command[mapping[:created_by][:identifier]]
+          identifier = mapping[:created_by][:identifier]
         else
           identifier = mapping[:consumes].find { |c| c[:type] == headers.type }[:identifier]
         end
