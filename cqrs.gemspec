@@ -21,6 +21,7 @@ project (http://github.com/MarkNijhof/Fohjin). See also dddcqrs and ncqrs google
 
   s.add_dependency 'activesupport', '~> 3.0'
   s.add_dependency 'uuid', '~> 2.3'
+  s.add_dependency 'eventstore'
 
   s.add_development_dependency 'rspec'
 end
