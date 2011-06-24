@@ -6,18 +6,25 @@ module Cqrs
       def applies event, version, &consumer
         define_method "__consume__#{event}__v#{version}" do |*args| instance_exec *args, &consumer end
       end
-      
-      def consumes command, options = {}, &consumer
-        define_method "__consume__#{command}" do |*args| instance_exec *args, &consumer end
 
-        map_command :map_command_as_aggregate_method, self, command, options
+      def consumes *arguments, &consumer #*args is an array of symbols plus an optional options hash at the end
+        commands, options = [], {}
+        while (arg = arguments.shift) do
+          commands << arg if arg.is_a?(Symbol)
+            options = arg if arg.is_a?(Hash)
+        end
+        commands.each do |command|
+          define_method "__consume__#{command}" do |*args| instance_exec *args, &consumer end
+
+          map_command :map_command_as_aggregate_method, self, command, options
+        end
       end
 
       def created_by command, options = {}, &consumer
         define_method "__consume__#{command}" do |*args| instance_exec *args, &consumer end
 
         map_command :map_command_as_aggregate_constructor, self, command, options
-      end      
+      end
 
       def hydrate(stream)
         instance = self.new
@@ -25,12 +32,12 @@ module Cqrs
         instance
       end
 
-      private 
-      
+      private
+
       def map_command(entry_point, type, command, opts)
         id = opts.has_key?(:id) ? opts[:id] : :id
         to_i = opts.key?(:to_i) ? opts[:to_i] : []
-        
+
         Cqrs::AggregateCommandMap.send entry_point, type, command, id, to_i
       end
     end
@@ -41,7 +48,7 @@ module Cqrs
       end
 
       attr_reader :aggregate_id
-      
+
       def initial_version
         @initial_version ||= 0
       end
@@ -54,7 +61,7 @@ module Cqrs
         @committed_commands ||= []
       end
 
-      def uncommitted_events 
+      def uncommitted_events
         @uncommitted_events ||= []
       end
 
@@ -119,7 +126,7 @@ module Cqrs
         return if events.empty?
 
         raise "This aggregate cannot apply a historical event stream because it is not empty." unless uncommitted_events.empty? && initial_version == 0
-        
+
         @aggregate_id = stream.stream_id
 
         events.each_with_index do |event, i|
