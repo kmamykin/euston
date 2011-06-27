@@ -4,7 +4,7 @@ require 'uuid'
 
 module Cqrs
   class << self
-    attr_accessor :uuid
+    attr_accessor :uuid, :logger
   end
 end
 

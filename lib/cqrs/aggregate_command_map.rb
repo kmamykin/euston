@@ -3,7 +3,7 @@ module Cqrs
     class << self
       def deliver_command(headers, command)
         mapping = @map.find { |m| m[:created_by][:type] == headers.type }
-
+        Cqrs.logger.debug "¬¬¬¬¬¬¬ AggregateCommandMap deliver_command mapping: #{mapping.inspect}"
         if mapping.nil?
           aggregate = @map.find { |m| m[:consumes].any? { |c| c[:type] == headers.type } }
           return if aggregate.nil?
@@ -14,6 +14,7 @@ module Cqrs
         else
           aggregate = load_aggregate_for_command(mapping, headers, command)
           aggregate = construct_new_aggregate(mapping[:type], headers, command) if aggregate.nil?
+          Cqrs.logger.debug "¬¬¬¬¬¬¬ AggregateCommandMap deliver_command aggregate: #{aggregate.inspect}"
           aggregate
         end
       end
@@ -48,7 +49,9 @@ module Cqrs
 
       def construct_new_aggregate(type, headers, command)
         aggregate = type.new
+        Cqrs.logger.debug "¬¬¬¬¬¬¬ AggregateCommandMap construct_new_aggregate aggregate: #{aggregate.inspect}"
         aggregate.consume_command headers, command
+        Cqrs.logger.debug "¬¬¬¬¬¬¬ AggregateCommandMap construct_new_aggregate aggregate: #{aggregate.inspect}"
         aggregate
       end
 
@@ -69,7 +72,7 @@ module Cqrs
         else
           identifier = mapping[:consumes].find { |c| c[:type] == headers.type }[:identifier]
         end
-
+        Cqrs.logger.debug "¬¬¬¬¬¬¬ AggregateCommandMap load_aggregate_for_command identifier: #{identifier.inspect}"
         Repository.find(mapping[:type], command[identifier])
       end
     end
