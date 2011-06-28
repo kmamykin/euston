@@ -101,8 +101,6 @@ module Cqrs
           event.headers.merge! :command => @current_headers.to_hash.merge(:body => @current_command)
         end
 
-        @aggregate_id = event.body[:id] if initial_version == 0 && uncommitted_events.empty?
-
         handle_event Cqrs::EventHeaders.from_hash(event.headers), event.body
         uncommitted_events << event
       end

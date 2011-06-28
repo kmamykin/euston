@@ -13,8 +13,11 @@ module Cqrs
           deliver_command_to_existing_aggregate aggregate, headers, command
         else
           aggregate = load_aggregate_for_command(mapping, headers, command)
-          aggregate = construct_new_aggregate(mapping[:type], headers, command) if aggregate.nil?
-          Cqrs.logger.debug "¬¬¬¬¬¬¬ AggregateCommandMap deliver_command aggregate: #{aggregate.inspect}"
+          if aggregate.nil?
+            identifier = find_identifier(mapping, headers)
+            aggregate_id = command[identifier] || Cqrs.uuid.generate
+            aggregate = construct_new_aggregate(mapping[:type], headers, command, aggregate_id)
+          end
           aggregate
         end
       end
@@ -47,11 +50,9 @@ module Cqrs
 
       private
 
-      def construct_new_aggregate(type, headers, command)
-        aggregate = type.new
-        Cqrs.logger.debug "¬¬¬¬¬¬¬ AggregateCommandMap construct_new_aggregate aggregate: #{aggregate.inspect}"
+      def construct_new_aggregate(type, headers, command, aggregate_id)
+        aggregate = type.new aggregate_id
         aggregate.consume_command headers, command
-        Cqrs.logger.debug "¬¬¬¬¬¬¬ AggregateCommandMap construct_new_aggregate aggregate: #{aggregate.inspect}"
         aggregate
       end
 
@@ -66,13 +67,16 @@ module Cqrs
         aggregate
       end
 
-      def load_aggregate_for_command(mapping, headers, command)
+      def find_identifier(mapping, headers)
         if mapping[:created_by][:type] == headers.type
-          identifier = mapping[:created_by][:identifier]
+          mapping[:created_by][:identifier]
         else
-          identifier = mapping[:consumes].find { |c| c[:type] == headers.type }[:identifier]
+          mapping[:consumes].find { |c| c[:type] == headers.type }[:identifier]
         end
-        Cqrs.logger.debug "¬¬¬¬¬¬¬ AggregateCommandMap load_aggregate_for_command identifier: #{identifier.inspect}"
+      end
+
+      def load_aggregate_for_command(mapping, headers, command)
+        identifier = find_identifier(mapping, headers)
         Repository.find(mapping[:type], command[identifier])
       end
     end

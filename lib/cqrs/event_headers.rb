@@ -11,6 +11,7 @@ module Cqrs
     end
 
     def self.from_hash hash
+      Cqrs.logger.debug "!!!!!!!!!!!!!!!!! EventHeaders from_hash hash #{hash.class} #{hash.inspect}"
       self.new hash[:id], hash[:type].to_sym, hash[:version], hash[:timestamp], hash[:command]
     end
   end
