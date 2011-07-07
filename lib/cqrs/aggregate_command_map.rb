@@ -3,7 +3,6 @@ module Cqrs
     class << self
       def deliver_command(headers, command)
         mapping = @map.find { |m| m[:created_by][:type] == headers.type }
-        Cqrs.logger.debug "¬¬¬¬¬¬¬ AggregateCommandMap deliver_command mapping: #{mapping.inspect}"
         if mapping.nil?
           aggregate = @map.find { |m| m[:consumes].any? { |c| c[:type] == headers.type } }
           return if aggregate.nil?

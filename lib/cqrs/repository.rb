@@ -5,7 +5,6 @@ module Cqrs
 
       def find type, id
         stream = event_store.open_stream :stream_id => id
-        Cqrs.logger.debug "¬¬¬¬¬¬¬ Repository find stream   : #{stream.inspect}"
         return nil if stream.committed_events.empty?
 
         type.hydrate stream
