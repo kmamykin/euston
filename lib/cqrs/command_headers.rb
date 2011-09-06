@@ -13,7 +13,7 @@ module Cqrs
       {
         :id => id,
         :type => type,
-        :version => version
+        :version => version,
         :log_completion => log_completion
       }
     end
