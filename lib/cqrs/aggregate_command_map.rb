@@ -1,79 +1,100 @@
 module Cqrs
+
+  class AggregateMap < Array
+    def get_aggregate(type)
+      find { |a| a[:type] == type }
+    end
+
+    def find_entry_having_created_by_type(type)
+      find_any_entry_by_type(:created_by,type)
+    end
+
+    def find_entry_having_consumes_type(type)
+      find_any_entry_by_type(:consumes,type)
+    end
+
+    private
+
+    def find_any_entry_by_type(key, type)
+      find { |m| m[key].has_mapping?(type) }
+    end
+  end
+
+  class MappingMap < Array
+    def has_mapping?(command, key = :type)
+      self.any? { |m| m[key] == command }
+    end
+    def find_mapping_for_type(type)
+      find { |c| c[:type] == type }
+    end
+  end
+
   class AggregateCommandMap
     class << self
       def deliver_command(headers, command)
-        mapping = @map.find { |m| m[:created_by][:type] == headers.type }
-        if mapping.nil?
-          mapping = @map.find { |m| m[:consumes].any? { |c| c[:type] == headers.type } }
-          return if mapping.nil?
-          deliver_command_to_existing_aggregate mapping, headers, command
-        else
-          aggregate = load_aggregate_for_command(mapping, headers, command)
+        map_entry = @map.find_entry_having_created_by_type(headers.type)
+        if map_entry
+          aggregate = load_aggregate_for_command(map_entry, headers, command)
           if aggregate.nil?
-            identifier = find_identifier(mapping, headers)
+            identifier = find_identifier(map_entry, headers)
             aggregate_id = command[identifier] || Cqrs.uuid.generate
-            aggregate = construct_new_aggregate(mapping[:type], headers, command, aggregate_id)
+            aggregate = construct_new_aggregate(map_entry[:type], headers, command, aggregate_id)
           end
           aggregate
+        else
+          map_entry = @map.find_entry_having_consumes_type(headers.type)
+          return unless map_entry
+          deliver_command_to_existing_aggregate map_entry, headers, command
         end
       end
 
       def map_command_as_aggregate_constructor(type, command, identifier, to_i = [])
-
-        @map ||= []
-
-        return if get_aggregate(type)
-
-        @map << { :type => type,
-                  :consumes => [],
-                  :created_by => { :type => command,
-                                   :identifier => identifier,
-                                   :to_i => to_i
-                                 }
-                }
+        @map ||= AggregateMap.new
+        aggregate = @map.get_aggregate(type)
+        mapping = { :type => command, :identifier => identifier, :to_i => to_i }
+        if aggregate
+          mappings = aggregate[:created_by]
+          mappings << mapping unless mappings.has_mapping?(command)
+        else
+          @map << { :type => type,
+                    :consumes => MappingMap.new,
+                    :created_by => MappingMap.new.push(mapping) }
+        end
       end
 
       def map_command_as_aggregate_method(type, command, identifier, to_i = [])
-        aggregate = get_aggregate type
+        aggregate = @map.get_aggregate(type)
         mappings = aggregate[:consumes]
 
-        unless mappings.any? { |m| m[:type] == command }
-          mappings << { :type => command,
-                        :identifier => identifier,
-                        :to_i => to_i }
-        end
+        return if mappings.has_mapping?(command)
+
+        mappings << { :type => command,
+                      :identifier => identifier,
+                      :to_i => to_i }
       end
 
       private
 
       def construct_new_aggregate(type, headers, command, aggregate_id)
-        aggregate = type.new aggregate_id
-        aggregate.consume_command headers, command
-        aggregate
+        type.new(aggregate_id).tap { |a| a.consume_command headers, command }
       end
 
-      def deliver_command_to_existing_aggregate(mapping, headers, command)
-        aggregate = load_aggregate_for_command mapping, headers, command
-        aggregate.consume_command headers, command
-        aggregate
-      end
-
-      def get_aggregate(type)
-        aggregate = @map.find { |a| a[:type] == type }
-        aggregate
-      end
-
-      def find_identifier(mapping, headers)
-        if mapping[:created_by][:type] == headers.type
-          mapping[:created_by][:identifier]
-        else
-          mapping[:consumes].find { |c| c[:type] == headers.type }[:identifier]
+      def deliver_command_to_existing_aggregate(map_entry, headers, command)
+        load_aggregate_for_command(map_entry, headers, command).tap do |a|
+          a.consume_command headers, command
         end
       end
 
-      def load_aggregate_for_command(mapping, headers, command)
-        identifier = find_identifier(mapping, headers)
-        Repository.find(mapping[:type], command[identifier])
+      def find_identifier(map_entry, headers)
+        [:created_by, :consumes].each do |key|
+          mapping = map_entry[key].find_mapping_for_type(headers.type)
+          return mapping[:identifier] if mapping
+        end
+      end
+
+      def load_aggregate_for_command(map_entry, headers, command)
+        identifier = find_identifier(map_entry, headers)
+        Repository.find(map_entry[:type], command[identifier])
       end
     end
   end
