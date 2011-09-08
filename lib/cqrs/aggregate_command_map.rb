@@ -1,22 +1,32 @@
 module Cqrs
 
   class AggregateMap < Array
-    def get_aggregate(type)
+    def find_entry_by_type(type)
       find { |a| a[:type] == type }
     end
 
     def find_entry_having_created_by_type(type)
-      find_any_entry_by_type(:created_by,type)
+      find_entry_by_mapping_type(:created_by,type)
     end
 
     def find_entry_having_consumes_type(type)
-      find_any_entry_by_type(:consumes,type)
+      find_entry_by_mapping_type(:consumes,type)
     end
 
     private
 
-    def find_any_entry_by_type(key, type)
+    def find_entry_by_mapping_type(key, type)
       find { |m| m[key].has_mapping?(type) }
+    end
+  end
+
+  class AggregateEntry < Hash
+    def find_identifier_by_type(type)
+      [:created_by, :consumes].each do |key|
+        mapping = self[key].find_mapping_for_type(type)
+        return mapping[:identifier] if mapping
+      end
+      #default
     end
   end
 
@@ -31,46 +41,49 @@ module Cqrs
 
   class AggregateCommandMap
     class << self
-      def deliver_command(headers, command)
-        map_entry = @map.find_entry_having_created_by_type(headers.type)
-        if map_entry
-          aggregate = load_aggregate_for_command(map_entry, headers, command)
-          if aggregate.nil?
-            identifier = find_identifier(map_entry, headers)
-            aggregate_id = command[identifier] || Cqrs.uuid.generate
-            aggregate = construct_new_aggregate(map_entry[:type], headers, command, aggregate_id)
-          end
-          aggregate
-        else
-          map_entry = @map.find_entry_having_consumes_type(headers.type)
-          return unless map_entry
-          deliver_command_to_existing_aggregate map_entry, headers, command
-        end
-      end
 
       def map_command_as_aggregate_constructor(type, command, identifier, to_i = [])
         @map ||= AggregateMap.new
-        aggregate = @map.get_aggregate(type)
         mapping = { :type => command, :identifier => identifier, :to_i => to_i }
-        if aggregate
-          mappings = aggregate[:created_by]
+
+        aggregate_entry = @map.find_entry_by_type(type)
+        if aggregate_entry
+          mappings = aggregate_entry[:created_by]
           mappings << mapping unless mappings.has_mapping?(command)
         else
-          @map << { :type => type,
+          entry = AggregateEntry.new
+          @map << entry.merge!( :type => type,
                     :consumes => MappingMap.new,
-                    :created_by => MappingMap.new.push(mapping) }
+                    :created_by => MappingMap.new.push(mapping) )
         end
       end
 
       def map_command_as_aggregate_method(type, command, identifier, to_i = [])
-        aggregate = @map.get_aggregate(type)
-        mappings = aggregate[:consumes]
+        aggregate_entry = @map.find_entry_by_type(type)
+        mappings = aggregate_entry[:consumes]
 
         return if mappings.has_mapping?(command)
 
         mappings << { :type => command,
                       :identifier => identifier,
                       :to_i => to_i }
+      end
+
+      def deliver_command(headers, command)
+        map_entry = @map.find_entry_having_created_by_type( headers.type )
+        if map_entry
+          aggregate = load_aggregate_for_command( map_entry, headers, command )
+          if aggregate.nil?
+            identifier = map_entry.find_identifier_by_type( headers.type )
+            aggregate_id = command[identifier] || Cqrs.uuid.generate
+            aggregate = construct_new_aggregate( map_entry[:type], headers, command, aggregate_id )
+          end
+          aggregate
+        else
+          map_entry = @map.find_entry_having_consumes_type( headers.type )
+          return unless map_entry
+          deliver_command_to_existing_aggregate( map_entry, headers, command )
+        end
       end
 
       private
@@ -85,15 +98,8 @@ module Cqrs
         end
       end
 
-      def find_identifier(map_entry, headers)
-        [:created_by, :consumes].each do |key|
-          mapping = map_entry[key].find_mapping_for_type(headers.type)
-          return mapping[:identifier] if mapping
-        end
-      end
-
       def load_aggregate_for_command(map_entry, headers, command)
-        identifier = find_identifier(map_entry, headers)
+        identifier = map_entry.find_identifier_by_type(headers.type)
         Repository.find(map_entry[:type], command[identifier])
       end
     end
