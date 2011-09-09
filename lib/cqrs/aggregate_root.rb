@@ -73,6 +73,7 @@ module Cqrs
         @current_command = command
 
         handle_command headers, command
+        self
       end
 
       def replay_event(headers, event)

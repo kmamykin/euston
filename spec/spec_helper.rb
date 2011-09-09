@@ -6,5 +6,7 @@ require 'bundler'
 Bundler.setup
 Bundler.require :default, :test
 
+require 'awesome_print'
+
 require 'cqrs'
-require 'sample_aggregate_root'
+require 'aggregate_root_samples'
