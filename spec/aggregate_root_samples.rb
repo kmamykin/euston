@@ -8,7 +8,7 @@ module Cqrs
       end
 
       created_by :import_widget do |command|
-        apply_event :widget_imported, 1, :access_count => command.imported_count
+        apply_event :widget_imported, 1, :access_count => (@access_count || 0) + command.imported_count
       end
 
       consumes :log_access_to_widget, :id => :widget_id do |command|

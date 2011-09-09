@@ -4,27 +4,26 @@ require File.expand_path("../spec_helper", __FILE__)
 module Cqrs
 
   describe "AggregateCommandMap" do
-    let(:aggregate) { Cqrs::Sample::Widget.new( Cqrs.uuid.generate ) }
-    let(:aggregate2) { Cqrs::Sample::Product.new( Cqrs.uuid.generate ) }
+    let(:guid1) {Cqrs.uuid.generate}
+    let(:guid2) {Cqrs.uuid.generate}
 
     let(:command_cw) { { :headers => Cqrs::CommandHeaders.new(Cqrs.uuid.generate, :create_widget, 1),
-                      :body => { :id => aggregate.aggregate_id} } }
+                      :body => { :id => guid1} } }
     let(:command_iw) { { :headers => Cqrs::CommandHeaders.new(Cqrs.uuid.generate, :import_widget, 1),
-                      :body => { :id => aggregate.aggregate_id, :imported_count => 5 } } }
+                      :body => { :id => guid1, :imported_count => 5 } } }
     let(:command_aw) { { :headers => Cqrs::CommandHeaders.new(Cqrs.uuid.generate, :log_access_to_widget, 1),
-                      :body => { :widget_id => aggregate.aggregate_id } } }
+                      :body => { :widget_id => guid1 } } }
     let(:command_cp) { { :headers => Cqrs::CommandHeaders.new(Cqrs.uuid.generate, :create_product, 1),
-                      :body => { :id => aggregate2.aggregate_id} } }
+                      :body => { :id => guid2} } }
     let(:command_ip) { { :headers => Cqrs::CommandHeaders.new(Cqrs.uuid.generate, :import_product, 1),
-                      :body => { :id => aggregate2.aggregate_id, :imported_count => 5 } } }
+                      :body => { :id => guid2, :imported_count => 5 } } }
     let(:command_ap) { { :headers => Cqrs::CommandHeaders.new(Cqrs.uuid.generate, :log_access_to_product, 1),
-                      :body => { :product_id => aggregate2.aggregate_id } } }
-    before do
-      aggregate
-      aggregate2
-    end
+                      :body => { :product_id => guid2 } } }
 
     describe "when creating new Aggregates" do
+      let(:aggregate) { Cqrs::Sample::Widget.new( Cqrs.uuid.generate ) }
+      let(:aggregate2) { Cqrs::Sample::Product.new( Cqrs.uuid.generate ) }
+
       it "then side effects are seen" do
 
         aggregate.committed_commands.should have(0).items
@@ -50,17 +49,17 @@ module Cqrs
     describe "when consuming commands with first constructor" do
       it "is followed by a consumes command" do
 
-        AggregateCommandMap.map.should have(2).items
-        aggregate.committed_commands.should have(0).items
-        aggregate2.committed_commands.should have(0).items
+        results = {}
+        Repository.stub(:find) do |type, id|
+          results[id]
+        end
 
-        aggregate.consume_command command_cw[:headers], command_cw[:body]
-
+        aggregate = AggregateCommandMap.deliver_command command_cw[:headers], command_cw[:body]
+        results[aggregate.aggregate_id] = aggregate
         aggregate.uncommitted_events.should have(1).item
 
-        aggregate.consume_command command_aw[:headers], command_aw[:body]
-
-        aggregate.uncommitted_events.should have(2).items
+        aggregate2 = AggregateCommandMap.deliver_command command_aw[:headers], command_aw[:body]
+        aggregate2.uncommitted_events.should have(2).items
 
       end
     end
@@ -68,18 +67,35 @@ module Cqrs
     describe "when consuming commands with the second constructor" do
       it "is followed by a consumes command" do
 
-        AggregateCommandMap.map.should have(2).items
-        aggregate.committed_commands.should have(0).items
-        aggregate2.committed_commands.should have(0).items
+        results = {}
+        Repository.stub(:find) do |type, id|
+          results[id]
+        end
 
-        aggregate.consume_command command_iw[:headers], command_iw[:body]
-
+        aggregate = AggregateCommandMap.deliver_command command_iw[:headers], command_iw[:body]
+        results[aggregate.aggregate_id] = aggregate
         aggregate.uncommitted_events.should have(1).item
 
-        aggregate.consume_command command_aw[:headers], command_aw[:body]
+        aggregate2 = AggregateCommandMap.deliver_command command_aw[:headers], command_aw[:body]
+        aggregate2.uncommitted_events.should have(2).items
+      end
+    end
 
-        aggregate.uncommitted_events.should have(2).items
+    describe "when consuming commands with the two constructs" do
+      it "is followed by a consumes command" do
 
+        results = {}
+        Repository.stub(:find) do |type, id|
+          results[id]
+        end
+
+        aggregate = AggregateCommandMap.deliver_command command_iw[:headers], command_iw[:body]
+        results[aggregate.aggregate_id] = aggregate
+        aggregate.uncommitted_events.should have(1).item
+        AggregateCommandMap.deliver_command command_iw[:headers], command_iw[:body]
+        AggregateCommandMap.deliver_command command_aw[:headers], command_aw[:body]
+        aggregate.uncommitted_events.should have(3).items
+        ap aggregate.uncommitted_events
       end
     end
   end

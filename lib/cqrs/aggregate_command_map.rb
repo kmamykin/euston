@@ -6,7 +6,7 @@ module Cqrs
     end
 
     def find_entry_with_mapping_match(spec)
-      find {|m| m[:mappings].find_mapping_matching(spec)}
+      find { |m| m[:mappings].any_mapping_matching?(spec) }
     end
   end
 
@@ -27,8 +27,12 @@ module Cqrs
       find { |c| c[:type] == type }
     end
 
+    def any_mapping_matching?(spec)
+      any? { |c| (c.keys & spec.keys).all? {|k| c[k] == spec[k]} }
+    end
+
     def find_mapping_matching(spec)
-      find {|c| (c.keys & spec.keys).inject(true){|m, k| m && c[k] == spec[k]} }
+      find {|c| (c.keys & spec.keys).all? {|k| c[k] == spec[k]} }
     end
 
     def push_if_unique(mapping, type)
@@ -58,15 +62,15 @@ module Cqrs
       end
 
       def deliver_command(headers, command)
+        args = [headers, command]
         query = {:kind => :construct, :type => headers.type}
         if (entry = @map.find_entry_with_mapping_match( query ))
-          args = [entry, headers, command]
-          aggregate = load_aggregate(*args) || create_aggregate(*args)
+          aggregate = load_aggregate(entry, *args) || create_aggregate(entry, *args)
         else
-          query[:kind] = :consumes
+          query[:kind] = :consume
           entry = @map.find_entry_with_mapping_match( query )
           return unless entry
-          aggregate = load_aggregate(entry, headers, command)
+          aggregate = load_aggregate(entry, *args)
         end
         aggregate.consume_command( headers, command )
       end
