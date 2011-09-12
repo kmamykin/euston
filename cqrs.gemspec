@@ -18,8 +18,8 @@ project (http://github.com/MarkNijhof/Fohjin). See also dddcqrs and ncqrs google
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
 
   s.add_dependency 'activesupport', '~> 3.0'
-  s.add_dependency 'eventstore'
   s.add_dependency 'uuid',          '~> 2.3'
 
+  s.add_development_dependency 'awesome_print'
   s.add_development_dependency 'rspec'
 end
