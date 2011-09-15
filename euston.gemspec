@@ -2,12 +2,13 @@ Gem::Specification.new do |s|
   s.name        = 'euston'
   s.version     = '1.0.0'
   s.date        = '2011-09-15'
-  s.platform    = Gem::Platform::RUBY
+  s.platform    = RUBY_PLATFORM.to_s == 'java' ? 'java' : Gem::Platform::RUBY
   s.authors     = ['Lee Henson', 'Guy Boertje']
   s.email       = ['lee.m.henson@gmail.com', 'guyboertje@gmail.com']
   s.summary     = %q{Cqrs tooling.}
   s.description = ''
   s.homepage    = 'http://github.com/leemhenson/euston'
+
   # = MANIFEST =
   s.files = %w[
     Rakefile
@@ -32,10 +33,10 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
 
-  s.add_dependency 'activesupport',       '~> 3.0'
-  s.add_dependency 'euston-eventstore',   '~> 1'
-  s.add_dependency 'require_all',         '~> 1.2'
-  s.add_dependency 'uuid',                '~> 2.3' unless RUBY_PLATFORM.to_s == 'java'
-  s.add_development_dependency 'fuubar',  '~> 0.0'
-  s.add_development_dependency 'rspec',   '~> 2.6'
+  s.add_dependency 'activesupport',       '~> 3.0.9'
+  s.add_dependency 'euston-eventstore',   '~> 1.0.0'
+  s.add_dependency 'require_all',         '~> 1.2.0'
+  s.add_development_dependency 'fuubar',  '~> 0.0.0'
+  s.add_development_dependency 'rspec',   '~> 2.6.0'
+  s.add_development_dependency 'uuid',    '~> 2.3.0'
 end
