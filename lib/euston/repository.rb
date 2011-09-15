@@ -1,4 +1,4 @@
-module Cqrs
+module Euston
   module Repository
     class << self
       attr_accessor :event_store
@@ -13,7 +13,7 @@ module Cqrs
       def save aggregate
         stream = event_store.open_stream :stream_id => aggregate.aggregate_id
         aggregate.uncommitted_events.each { |e| stream << e }
-        stream.commit_changes Cqrs.uuid.generate
+        stream.commit_changes Euston.uuid.generate
       end
     end
   end

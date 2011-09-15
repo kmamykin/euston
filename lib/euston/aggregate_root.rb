@@ -1,6 +1,6 @@
-module Cqrs
+module Euston
   module AggregateRoot
-    extend ::ActiveSupport::Concern
+    extend ActiveSupport::Concern
 
     module ClassMethods
       def applies event, version, &consumer
@@ -38,7 +38,7 @@ module Cqrs
         id = opts.has_key?(:id) ? opts[:id] : :id
         to_i = opts.key?(:to_i) ? opts[:to_i] : []
 
-        Cqrs::AggregateCommandMap.send entry_point, type, command, id, to_i
+        Euston::AggregateCommandMap.send entry_point, type, command, id, to_i
       end
     end
 
@@ -66,7 +66,7 @@ module Cqrs
       end
 
       def consume_command(headers, command)
-        headers = Cqrs::CommandHeaders.from_hash(headers) if headers.is_a?(Hash)
+        headers = Euston::CommandHeaders.from_hash(headers) if headers.is_a?(Hash)
         return if committed_commands.include? headers.id
 
         @current_headers = headers
@@ -77,7 +77,7 @@ module Cqrs
       end
 
       def replay_event(headers, event)
-        headers = Cqrs::EventHeaders.from_hash(headers) if headers.is_a?(Hash)
+        headers = Euston::EventHeaders.from_hash(headers) if headers.is_a?(Hash)
         command = headers.command
         committed_commands << command[:id] unless command.nil? || committed_commands.include?(command[:id])
 
@@ -92,8 +92,8 @@ module Cqrs
       protected
 
       def apply_event(type, version, body = {})
-        event = EventStore::EventMessage.new(body.is_a?(Hash) ? body : body.marshal_dump)
-        event.headers.merge! :id => Cqrs.uuid.generate,
+        event = Euston::EventStore::EventMessage.new(body.is_a?(Hash) ? body : body.marshal_dump)
+        event.headers.merge! :id => Euston.uuid.generate,
                              :type => type,
                              :version => version,
                              :timestamp => Time.now.to_f
@@ -102,7 +102,7 @@ module Cqrs
           event.headers.merge! :command => @current_headers.to_hash.merge(:body => @current_command)
         end
 
-        handle_event Cqrs::EventHeaders.from_hash(event.headers), event.body
+        handle_event Euston::EventHeaders.from_hash(event.headers), event.body
         uncommitted_events << event
       end
 
@@ -129,7 +129,7 @@ module Cqrs
         @aggregate_id = stream.stream_id
 
         events.each_with_index do |event, i|
-          replay_event Cqrs::EventHeaders.from_hash(event.headers), event.body
+          replay_event Euston::EventHeaders.from_hash(event.headers), event.body
         end
       end
     end

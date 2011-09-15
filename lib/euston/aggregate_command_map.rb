@@ -1,5 +1,4 @@
-module Cqrs
-
+module Euston
   class AggregateMap < Array
     def find_entry_by_type(type)
       find { |a| a[:type] == type }
@@ -79,7 +78,7 @@ module Cqrs
 
       def create_aggregate(map_entry, headers, command)
         identifier = map_entry.find_identifier_by_type(headers.type)
-        aggregate_id = command[identifier] || Cqrs.uuid.generate
+        aggregate_id = command[identifier] || Euston.uuid.generate
         map_entry[:type].new(aggregate_id)
       end
 

@@ -1,4 +1,4 @@
-module Cqrs
+module Euston
   module CommandHandler
     extend ActiveSupport::Concern
 
@@ -18,7 +18,7 @@ module Cqrs
       protected
 
       def publish headers, command
-        Cqrs::CommandBus.publish headers, command
+        Euston::CommandBus.publish headers, command
       end
     end
   end

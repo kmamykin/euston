@@ -1,4 +1,4 @@
-module Cqrs
+module Euston
   module CommandBus
     def self.publish headers, command
       aggregate = AggregateCommandMap.deliver_command headers, command

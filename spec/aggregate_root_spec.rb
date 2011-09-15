@@ -1,13 +1,12 @@
-
 require File.expand_path("../spec_helper", __FILE__)
 
-module Cqrs
+module Euston
   describe 'aggregate root' do
     context 'duplicate command consumption' do
       let(:aggregate) { Sample::Widget.new }
       let(:aggregate2) { Sample::Widget.new }
-      let(:command) { { :headers => CommandHeaders.new(Cqrs.uuid.generate, :create_widget, 1),
-                        :body => { :id => Cqrs.uuid.generate } } }
+      let(:command) { { :headers => CommandHeaders.new(Euston.uuid.generate, :create_widget, 1),
+                        :body => { :id => Euston.uuid.generate } } }
 
       it 'does not handle the same command twice' do
         aggregate.consume_command command[:headers], command[:body]

@@ -1,4 +1,4 @@
-module Cqrs
+module Euston
   class EventHeaders
     attr_reader :id, :type, :version, :timestamp, :command
 

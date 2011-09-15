@@ -1,4 +1,4 @@
-module Cqrs
+module Euston
   class CommandHeaders
     attr_reader :id, :type, :version, :log_completion
 

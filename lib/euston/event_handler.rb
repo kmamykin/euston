@@ -1,4 +1,4 @@
-module Cqrs
+module Euston
   module EventHandler
     extend ActiveSupport::Concern
 

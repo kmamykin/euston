@@ -1,7 +1,7 @@
-module Cqrs
+module Euston
   module Sample
     class Widget
-      include Cqrs::AggregateRoot
+      include Euston::AggregateRoot
 
       created_by :create_widget do |command|
         apply_event :widget_created, 1, command
@@ -30,7 +30,7 @@ module Cqrs
     end
 
     class Product
-      include Cqrs::AggregateRoot
+      include Euston::AggregateRoot
 
       created_by :create_product do |command|
         apply_event :product_created, 1, command

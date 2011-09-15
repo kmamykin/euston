@@ -1,46 +1,45 @@
-
 require File.expand_path("../spec_helper", __FILE__)
 
-module Cqrs
+module Euston
 
   describe "AggregateCommandMap" do
-    let(:guid1) {Cqrs.uuid.generate}
-    let(:guid2) {Cqrs.uuid.generate}
+    let(:guid1) {Euston.uuid.generate}
+    let(:guid2) {Euston.uuid.generate}
 
-    let(:command_cw) { { :headers => CommandHeaders.new(Cqrs.uuid.generate, :create_widget, 1),
+    let(:command_cw) { { :headers => CommandHeaders.new(Euston.uuid.generate, :create_widget, 1),
                       :body => { :id => guid1} } }
-    let(:command_iw) { { :headers => CommandHeaders.new(Cqrs.uuid.generate, :import_widget, 1),
+    let(:command_iw) { { :headers => CommandHeaders.new(Euston.uuid.generate, :import_widget, 1),
                       :body => { :id => guid1, :imported_count => 5 } } }
-    let(:command_aw) { { :headers => CommandHeaders.new(Cqrs.uuid.generate, :log_access_to_widget, 1),
+    let(:command_aw) { { :headers => CommandHeaders.new(Euston.uuid.generate, :log_access_to_widget, 1),
                       :body => { :widget_id => guid1 } } }
-    let(:command_cp) { { :headers => CommandHeaders.new(Cqrs.uuid.generate, :create_product, 1),
+    let(:command_cp) { { :headers => CommandHeaders.new(Euston.uuid.generate, :create_product, 1),
                       :body => { :id => guid2} } }
-    let(:command_ip) { { :headers => CommandHeaders.new(Cqrs.uuid.generate, :import_product, 1),
+    let(:command_ip) { { :headers => CommandHeaders.new(Euston.uuid.generate, :import_product, 1),
                       :body => { :id => guid2, :imported_count => 5 } } }
-    let(:command_ap) { { :headers => CommandHeaders.new(Cqrs.uuid.generate, :log_access_to_product, 1),
+    let(:command_ap) { { :headers => CommandHeaders.new(Euston.uuid.generate, :log_access_to_product, 1),
                       :body => { :product_id => guid2 } } }
 
     describe "when creating new Aggregates" do
-      let(:aggregate) { Sample::Widget.new( Cqrs.uuid.generate ) }
-      let(:aggregate2) { Sample::Product.new( Cqrs.uuid.generate ) }
+      let(:aggregate) { Sample::Widget.new( Euston.uuid.generate ) }
+      let(:aggregate2) { Sample::Product.new( Euston.uuid.generate ) }
 
       it "then side effects are seen" do
 
         aggregate.committed_commands.should have(0).items
         aggregate2.committed_commands.should have(0).items
 
-        Sample::Widget.new( Cqrs.uuid.generate )
+        Sample::Widget.new( Euston.uuid.generate )
 
         AggregateCommandMap.map.should have(2).items
 
         #ap AggregateCommandMap.map
 
         entry1 = AggregateCommandMap.map[0]
-        entry1[:type].should eql(Cqrs::Sample::Widget)
+        entry1[:type].should eql(Euston::Sample::Widget)
         entry1[:mappings].should have(3).items
 
         entry2 = AggregateCommandMap.map[1]
-        entry2[:type].should eql(Cqrs::Sample::Product)
+        entry2[:type].should eql(Euston::Sample::Product)
         entry2[:mappings].should have(3).items
 
       end
