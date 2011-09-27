@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
     lib/euston/command_headers.rb
     lib/euston/event_handler.rb
     lib/euston/event_headers.rb
+    lib/euston/null_logger.rb
     lib/euston/repository.rb
     lib/euston/version.rb
     spec/aggregate_command_map_spec.rb
