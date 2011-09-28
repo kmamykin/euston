@@ -1,4 +1,5 @@
 require 'active_support/concern'
+require 'active_model'
 require 'require_all'
 require 'ostruct'
 
