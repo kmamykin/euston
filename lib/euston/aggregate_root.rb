@@ -3,42 +3,14 @@ module Euston
     extend ActiveSupport::Concern
 
     module ClassMethods
-      def applies event, version, &consumer
-        define_method "__consume__#{event}__v#{version}" do |*args| instance_exec *args, &consumer end
-      end
+      include AggregateRootPrivateMethodNames
+      include AggregateRootDslMethods
 
-      def consumes *arguments, &consumer #*args is an array of symbols plus an optional options hash at the end
-        commands, options = [], {}
-        while (arg = arguments.shift) do
-          commands << arg if arg.is_a?(Symbol)
-            options = arg if arg.is_a?(Hash)
-        end
-        commands.each do |command|
-          define_method "__consume__#{command}" do |*args| instance_exec *args, &consumer end
-
-          map_command :map_command_as_aggregate_method, self, command, options
-        end
-      end
-
-      def created_by command, options = {}, &consumer
-        define_method "__consume__#{command}" do |*args| instance_exec *args, &consumer end
-
-        map_command :map_command_as_aggregate_constructor, self, command, options
-      end
-
-      def hydrate(stream)
+      def hydrate stream, snapshot = nil
         instance = self.new
-        instance.send :reconstitute_from_history, stream
+        instance.send :apply_snapshot, snapshot unless snapshot.nil?
+        instance.send :apply_stream, stream
         instance
-      end
-
-      private
-
-      def map_command(entry_point, type, command, opts)
-        id = opts.has_key?(:id) ? opts[:id] : :id
-        to_i = opts.key?(:to_i) ? opts[:to_i] : []
-
-        Euston::AggregateCommandMap.send entry_point, type, command, id, to_i
       end
     end
 
@@ -76,6 +48,19 @@ module Euston
         self
       end
 
+      def take_snapshot
+        methods = self.class.instance_methods
+        regex = /__take_snapshot__v(\d+)__/
+        methods = methods.map { |m| regex.match m }.compact
+
+        raise "You tried to take a snapshot of #{self.class.name} but no snapshot method was found." if methods.empty?
+
+        version = methods.map { |m| m[1].to_i }.sort.last
+        name = self.class.take_snapshot_method_name version
+
+        { :version => version, :data => send(name) }
+      end
+
       def replay_event(headers, event)
         headers = Euston::EventHeaders.from_hash(headers) if headers.is_a?(Hash)
         command = headers.command
@@ -106,21 +91,13 @@ module Euston
         uncommitted_events << event
       end
 
-      def handle_command(headers, command)
-        name = "__consume__#{headers.type}"
-        method(name).call OpenStruct.new(command).freeze
-      end
-
-      def handle_event(headers, event)
-        name = "__consume__#{headers.type}__v#{headers.version}"
-        if respond_to? name.to_sym
-          method(name).call OpenStruct.new(event).freeze
-        else
-          raise "Couldn't find an event handler for #{headers.type} (v#{headers.version}) on #{self.class}. Did you forget an 'applies' block?"
+      def apply_snapshot snapshot
+        if !snapshot.nil?
+          raise "Trying to load a snapshot of aggregate #{self.class.name} but it does not have a load_snapshot method for version #{version}!" unless respond_to? self.class.load_snapshot_method_name(version)
         end
       end
 
-      def reconstitute_from_history(stream)
+      def apply_stream stream
         events = stream.committed_events
         return if events.empty?
 
@@ -130,6 +107,26 @@ module Euston
 
         events.each_with_index do |event, i|
           replay_event Euston::EventHeaders.from_hash(event.headers), event.body
+        end
+      end
+
+      def handle_command headers, command
+        deliver_message headers, command, :consumes_method_name, 'a command', "a 'consumes' block"
+      end
+
+      def handle_event headers, event
+        deliver_message headers, event, :applies_method_name, 'an event', "an 'applies' block"
+      end
+
+      private
+
+      def deliver_message headers, message, name_method, message_kind, expected_block_kind
+        name = self.class.send name_method, headers.type, headers.version
+
+        if respond_to? name.to_sym
+          method(name).call OpenStruct.new(message).freeze
+        else
+          raise "Couldn't deliver #{message_kind} (#{headers.type} v#{headers.version}) to #{self.class}. Did you forget #{expected_block_kind}?"
         end
       end
     end

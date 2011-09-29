@@ -1,6 +1,5 @@
 require 'active_support/concern'
 require 'active_model'
-require 'require_all'
 require 'ostruct'
 
 module Euston
@@ -23,4 +22,15 @@ end
 Euston.uuid = Uuid
 
 require 'euston-eventstore'
-require_rel 'euston'
+require 'euston/aggregate_command_map'
+require 'euston/aggregate_root_private_method_names'
+require 'euston/aggregate_root_dsl_methods'
+require 'euston/aggregate_root'
+require 'euston/command'
+require 'euston/command_bus'
+require 'euston/command_handler'
+require 'euston/command_headers'
+require 'euston/event_handler'
+require 'euston/event_headers'
+require 'euston/null_logger'
+require 'euston/repository'

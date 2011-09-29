@@ -38,7 +38,14 @@ Gem::Specification.new do |s|
   s.add_dependency 'activemodel',         '~> 3.0.9'
   s.add_dependency 'activesupport',       '~> 3.0.9'
   s.add_dependency 'euston-eventstore',   '~> 1.0.0'
-  s.add_dependency 'require_all',         '~> 1.2.0'
+
+  if RUBY_PLATFORM.to_s == 'java'
+    s.add_dependency 'jmongo',            '~> 1.0.3'
+  else
+    s.add_dependency 'bson',              '~> 1.3.1'
+    s.add_dependency 'bson_ext',          '~> 1.3.1'
+  end
+
   s.add_development_dependency 'fuubar',  '~> 0.0.0'
   s.add_development_dependency 'rspec',   '~> 2.6.0'
   s.add_development_dependency 'uuid',    '~> 2.3.0'
