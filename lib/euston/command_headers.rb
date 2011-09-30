@@ -21,5 +21,9 @@ module Euston
     def self.from_hash hash
       self.new hash[:id], hash[:type].to_sym, hash[:version], ( hash[:log_completion] || false )
     end
+
+    def to_s
+      "#{id} #{type} (v#{version})"
+    end
   end
 end
