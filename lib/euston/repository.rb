@@ -4,10 +4,10 @@ module Euston
       attr_accessor :event_store
 
       def find type, id
-        stream = event_store.open_stream :stream_id => id
-        return nil if stream.committed_events.empty?
+        pair = event_store.get_snapshot_stream_pair id
+        return nil if pair.snapshot.nil? && pair.stream.committed_events.empty?
 
-        type.hydrate stream
+        type.hydrate pair.stream, pair.snapshot
       end
 
       def save aggregate
