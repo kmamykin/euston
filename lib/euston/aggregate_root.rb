@@ -16,7 +16,7 @@ module Euston
 
     module InstanceMethods
       def initialize aggregate_id = nil
-        @aggregate_id = aggregate_id unless aggregate_id.nil?
+        @aggregate_id = aggregate_id
       end
 
       attr_reader :aggregate_id
@@ -58,7 +58,7 @@ module Euston
         version = methods.map { |m| m[1].to_i }.sort.last
         name = self.class.take_snapshot_method_name version
 
-        { :version => version, :data => send(name) }
+        { :version => version, :payload => send(name) }
       end
 
       def replay_event(headers, event)
@@ -93,17 +93,21 @@ module Euston
 
       def apply_snapshot snapshot
         if !snapshot.nil?
+          version = snapshot.headers[:version]
           raise "Trying to load a snapshot of aggregate #{self.class.name} but it does not have a load_snapshot method for version #{version}!" unless respond_to? self.class.load_snapshot_method_name(version)
+
+          name = self.class.load_snapshot_method_name version
+          self.send name, snapshot.payload
         end
       end
 
       def apply_stream stream
+        @aggregate_id = stream.stream_id
+
         events = stream.committed_events
         return if events.empty?
 
         raise "This aggregate cannot apply a historical event stream because it is not empty." unless uncommitted_events.empty? && initial_version == 0
-
-        @aggregate_id = stream.stream_id
 
         events.each_with_index do |event, i|
           replay_event Euston::EventHeaders.from_hash(event.headers), event.body
