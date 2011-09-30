@@ -1,6 +1,7 @@
 module Euston
   module AggregateRoot
     extend ActiveSupport::Concern
+    include Euston::EventHandler
 
     module ClassMethods
       include AggregateRootPrivateMethodNames
