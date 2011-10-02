@@ -37,7 +37,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'activemodel',         '~> 3.0.9'
   s.add_dependency 'activesupport',       '~> 3.0.9'
-  s.add_dependency 'euston-eventstore',   '~> 1.0.0'
 
   if RUBY_PLATFORM.to_s == 'java'
     s.add_dependency 'jmongo',            '~> 1.0.3'
