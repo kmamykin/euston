@@ -1,13 +1,14 @@
 module Euston
   module EventHandler
     extend ActiveSupport::Concern
+    include Euston::EventHandlerPrivateMethodNames
 
     module ClassMethods
       def subscribes type, version = 1, opts = nil, &consumer
         if self.include? Euston::AggregateRoot
           opts = opts || { :id => :id }
 
-          self.class.send :define_method, "__id_from_event_#{type}__v#{version}__" do |event|
+          self.class.send :define_method, id_from_event_method_name(type, version) do |event|
             if opts[:id].respond_to? :call
               opts[:id].call event
             else
@@ -16,7 +17,7 @@ module Euston
           end
         end
 
-        define_method "__event_handler__#{type}__#{version}" do |*args|
+        define_method event_handler_method_name(type, version) do |*args|
           instance_exec *args, &consumer
         end
       end

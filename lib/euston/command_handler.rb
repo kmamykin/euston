@@ -1,10 +1,11 @@
 module Euston
   module CommandHandler
     extend ActiveSupport::Concern
+    include Euston::CommandHandlerPrivateMethodNames
 
     module ClassMethods
       def version number, &consumer
-        define_method "__version__#{number}" do |*args|
+        define_method command_handler_method_name(number) do |*args|
           if block_given?
             instance_exec *args, &consumer
           else

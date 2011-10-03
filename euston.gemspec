@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'euston'
-  s.version     = '1.0.2'
-  s.date        = '2011-09-28'
+  s.version     = '1.1.0'
+  s.date        = '2011-10-03'
   s.platform    = RUBY_PLATFORM.to_s == 'java' ? 'java' : Gem::Platform::RUBY
   s.authors     = ['Lee Henson', 'Guy Boertje']
   s.email       = ['lee.m.henson@gmail.com', 'guyboertje@gmail.com']
@@ -17,10 +17,16 @@ Gem::Specification.new do |s|
     lib/euston.rb
     lib/euston/aggregate_command_map.rb
     lib/euston/aggregate_root.rb
+    lib/euston/aggregate_root_dsl_methods.rb
+    lib/euston/aggregate_root_private_method_names.rb
+    lib/euston/command.rb
     lib/euston/command_bus.rb
     lib/euston/command_handler.rb
+    lib/euston/command_handler_private_method_names.rb
     lib/euston/command_headers.rb
+    lib/euston/event.rb
     lib/euston/event_handler.rb
+    lib/euston/event_handler_private_method_names.rb
     lib/euston/event_headers.rb
     lib/euston/null_logger.rb
     lib/euston/repository.rb
@@ -37,13 +43,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'activemodel',         '~> 3.0.9'
   s.add_dependency 'activesupport',       '~> 3.0.9'
-
-  if RUBY_PLATFORM.to_s == 'java'
-    s.add_dependency 'jmongo',            '~> 1.0.3'
-  else
-    s.add_dependency 'bson',              '~> 1.3.1'
-    s.add_dependency 'bson_ext',          '~> 1.3.1'
-  end
 
   s.add_development_dependency 'fuubar',  '~> 0.0.0'
   s.add_development_dependency 'rspec',   '~> 2.6.0'

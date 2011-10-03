@@ -1,12 +1,11 @@
 module Euston
   module AggregateRoot
     extend ActiveSupport::Concern
+    include Euston::AggregateRootPrivateMethodNames
+    include Euston::AggregateRootDslMethods
     include Euston::EventHandler
 
     module ClassMethods
-      include AggregateRootPrivateMethodNames
-      include AggregateRootDslMethods
-
       def hydrate stream, snapshot = nil
         instance = self.new
         instance.send :apply_snapshot, snapshot unless snapshot.nil?
@@ -51,7 +50,7 @@ module Euston
 
       def take_snapshot
         methods = self.class.instance_methods
-        regex = /__take_snapshot__v(\d+)__/
+        regex = self.class.take_snapshot_regexp
         methods = methods.map { |m| regex.match m }.compact
 
         raise "You tried to take a snapshot of #{self.class.name} but no snapshot method was found." if methods.empty?
@@ -78,7 +77,7 @@ module Euston
       protected
 
       def apply_event(type, version, body = {})
-        event = Euston::EventStore::EventMessage.new(body.is_a?(Hash) ? body : body.marshal_dump)
+        event = Euston::Event.new(body.is_a?(OpenStruct) ? body.marshal_dump : body)
         event.headers.merge! :id => Euston.uuid.generate,
                              :type => type,
                              :version => version,
