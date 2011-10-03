@@ -1,6 +1,7 @@
 require 'active_support/concern'
 require 'active_model'
 require 'ostruct'
+require 'set'
 
 module Euston
   class << self

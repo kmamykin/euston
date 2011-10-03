@@ -29,23 +29,30 @@ module Euston
         !uncommitted_events.empty?
       end
 
-      def committed_commands
-        @committed_commands ||= []
+      def committed_messages
+        @committed_messages ||= Set.new
       end
 
       def uncommitted_events
         @uncommitted_events ||= []
       end
 
-      def consume_command(headers, command)
-        headers = Euston::CommandHeaders.from_hash(headers) if headers.is_a?(Hash)
-        return if committed_commands.include? headers.id
+      def consume_command headers, command
+        consume_message headers, command, :command, Euston::CommandHeaders, :send_command_to_method
+      end
 
-        @current_headers = headers
-        @current_command = command
+      def consume_event_subscription headers, event
+        consume_message headers, event, :event_subscription, Euston::EventHeaders, :send_event_subscription_to_method
+      end
 
-        handle_command headers, command
-        self
+      def replay_event headers, event
+        headers = Euston::EventHeaders.from_hash(headers) if headers.is_a?(Hash)
+
+        source_message = headers.source_message
+        committed_messages << source_message[:headers][:id] unless source_message.nil?
+
+        send_event_to_method headers, event
+        @initial_version = initial_version + 1
       end
 
       def take_snapshot
@@ -61,15 +68,6 @@ module Euston
         { :version => version, :payload => send(name) }
       end
 
-      def replay_event(headers, event)
-        headers = Euston::EventHeaders.from_hash(headers) if headers.is_a?(Hash)
-        command = headers.command
-        committed_commands << command[:id] unless command.nil? || committed_commands.include?(command[:id])
-
-        handle_event headers, event
-        @initial_version = initial_version + 1
-      end
-
       def version
         initial_version + uncommitted_events.length
       end
@@ -83,11 +81,12 @@ module Euston
                              :version => version,
                              :timestamp => Time.now.to_f
 
-        unless @current_headers.nil?
-          event.headers.merge! :command => @current_headers.to_hash.merge(:body => @current_command)
+        unless @current_message_headers.nil?
+          event.headers[@current_message_type] = { :headers  => @current_message_headers.to_hash,
+                                                   :body     => @current_message_body }
         end
 
-        handle_event Euston::EventHeaders.from_hash(event.headers), event.body
+        send_event_to_method Euston::EventHeaders.from_hash(event.headers), event.body
         uncommitted_events << event
       end
 
@@ -110,19 +109,37 @@ module Euston
         raise "This aggregate cannot apply a historical event stream because it is not empty." unless uncommitted_events.empty? && initial_version == 0
 
         events.each_with_index do |event, i|
-          replay_event Euston::EventHeaders.from_hash(event.headers), event.body
+          replay_event Euston::EventHeaders.from_hash(event[:headers]), event[:body]
         end
       end
 
-      def handle_command headers, command
+      def send_command_to_method headers, command
         deliver_message headers, command, :consumes_method_name, 'a command', "a 'consumes' block"
       end
 
-      def handle_event headers, event
+      def send_event_to_method headers, event
         deliver_message headers, event, :applies_method_name, 'an event', "an 'applies' block"
       end
 
+      def send_event_subscription_to_method headers, event
+        deliver_message headers, event, :event_handler_method_name, 'an event', "a 'subscribes' block"
+      end
+
       private
+
+      def consume_message headers, body, message_type, headers_type, send_method
+        headers = headers_type.from_hash(headers) if headers.is_a?(Hash)
+
+        unless committed_messages.include? headers.id
+          @current_message_type     = message_type
+          @current_message_headers  = headers
+          @current_message_body     = body
+
+          self.send send_method, headers, body
+        end
+
+        self
+      end
 
       def deliver_message headers, message, name_method, message_kind, expected_block_kind
         name = self.class.send name_method, headers.type, headers.version

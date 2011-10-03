@@ -25,8 +25,8 @@ module Euston
 
       it "then side effects are seen" do
 
-        aggregate.committed_commands.should have(0).items
-        aggregate2.committed_commands.should have(0).items
+        aggregate.committed_messages.should have(0).items
+        aggregate2.committed_messages.should have(0).items
 
         Sample::Widget.new( Euston.uuid.generate )
 
