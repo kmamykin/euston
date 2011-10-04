@@ -6,8 +6,9 @@ module Euston
     include Euston::EventHandler
 
     module ClassMethods
-      def hydrate stream, snapshot = nil
+      def hydrate stream, snapshot = nil, log = nil
         instance = self.new
+        instance.log = log unless log.nil?
         instance.send :apply_snapshot, snapshot unless snapshot.nil?
         instance.send :apply_stream, stream
         instance
@@ -17,8 +18,10 @@ module Euston
     module InstanceMethods
       def initialize aggregate_id = nil
         @aggregate_id = aggregate_id
+        @log = Euston::NullLogger.instance
       end
 
+      attr_accessor :log
       attr_reader :aggregate_id
 
       def initial_version
@@ -96,6 +99,8 @@ module Euston
           raise "Trying to load a snapshot of aggregate #{self.class.name} but it does not have a load_snapshot method for version #{version}!" unless respond_to? self.class.load_snapshot_method_name(version)
 
           name = self.class.load_snapshot_method_name version
+
+          @log.debug "Applying snapshot: #{snapshot.inspect}"
           self.send name, snapshot.payload
         end
       end
@@ -142,9 +147,10 @@ module Euston
       end
 
       def deliver_message headers, message, name_method, message_kind, expected_block_kind
-        name = self.class.send name_method, headers.type, headers.version
+        name = self.class.send(name_method, headers.type, headers.version).to_sym
 
-        if respond_to? name.to_sym
+        if respond_to? name
+          @log.debug "Calling #{name} with: #{message.inspect}"
           method(name).call OpenStruct.new(message).freeze
         else
           raise "Couldn't deliver #{message_kind} (#{headers.type} v#{headers.version}) to #{self.class}. Did you forget #{expected_block_kind}?"
