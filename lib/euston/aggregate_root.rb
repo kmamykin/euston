@@ -36,6 +36,10 @@ module Euston
         @committed_messages ||= Set.new
       end
 
+      def uncommitted_commands
+        @uncommitted_commands ||= []
+      end
+
       def uncommitted_events
         @uncommitted_events ||= []
       end
@@ -114,8 +118,18 @@ module Euston
         raise "This aggregate cannot apply a historical event stream because it is not empty." unless uncommitted_events.empty? && initial_version == 0
 
         events.each_with_index do |event, i|
-          replay_event Euston::EventHeaders.from_hash(event[:headers]), event[:body]
+          replay_event event.headers, event.body
         end
+      end
+
+      def publish_command command, dispatch_at = Time.now.to_f
+        raise ArgumentError, 'Commands must subclass Euston::Command' unless command.is_a? Euston::Command
+        raise Euston::Errors::InvalidCommandError, "An attempt was made to publish an invalid command from an aggregate root.\n\nAggregate id: #{@aggregate_id}\nAggregate type: #{self.class.name}\nCommand: #{command.to_hash}\nErrors: #{command.errors}" unless command.valid?
+
+        command = c.to_hash
+        command[:headers][:dispatch_at] = dispatch_at
+
+        uncommitted_commands << command
       end
 
       def send_command_to_method headers, command

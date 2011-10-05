@@ -22,6 +22,7 @@ end
 
 Euston.uuid = Uuid
 
+require 'euston/errors'
 require 'euston/aggregate_command_map'
 require 'euston/aggregate_root_private_method_names'
 require 'euston/aggregate_root_dsl_methods'
