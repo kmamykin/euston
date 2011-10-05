@@ -11,6 +11,10 @@ module Euston
         "__consume__#{command}__v#{version}__"
       end
 
+      def consumes_regex
+        /__consume__(\w+)__v(\d+)__/
+      end
+
       def id_from_event_method_name type, version
         "__id_from_event_#{type}__v#{version}__"
       end
