@@ -126,8 +126,7 @@ module Euston
         raise ArgumentError, 'Commands must subclass Euston::Command' unless command.is_a? Euston::Command
         raise Euston::Errors::InvalidCommandError, "An attempt was made to publish an invalid command from an aggregate root.\n\nAggregate id: #{@aggregate_id}\nAggregate type: #{self.class.name}\nCommand: #{command.to_hash}\nErrors: #{command.errors}" unless command.valid?
 
-        command = c.to_hash
-        command[:headers][:dispatch_at] = dispatch_at
+        command.headers[:dispatch_at] = dispatch_at
 
         uncommitted_commands << command
       end
