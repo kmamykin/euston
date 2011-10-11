@@ -40,6 +40,7 @@ module Euston
       private
 
       def define_private_method name, &block
+        block = method(:null_block) if block.nil?
         define_method name do |*args| instance_exec *args, &block end
       end
 
@@ -48,6 +49,10 @@ module Euston
         to_i = opts.key?(:to_i) ? opts[:to_i] : []
 
         Euston::AggregateCommandMap.send entry_point, type, command, id, to_i
+      end
+
+      def null_block *args
+        # block-less definitions get pointed here
       end
     end
   end
