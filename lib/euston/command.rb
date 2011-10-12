@@ -2,11 +2,12 @@ module Euston
   class Command
     include ActiveModel::Validations
 
-    def initialize body
+    def initialize body, dispatch_at = nil
       @headers = { :id => Uuid.generate,
                    :type => self.class.to_s.split('::').pop.underscore.to_sym }
 
       @body = body
+      @headers[:dispatch_at] = dispatch_at unless dispatch_at.nil?
     end
 
     def headers
