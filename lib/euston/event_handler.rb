@@ -3,6 +3,10 @@ module Euston
     extend ActiveSupport::Concern
     include Euston::EventHandlerPrivateMethodNames
 
+    included do
+      attr_accessor :log unless public_method_defined? :log=
+    end
+
     module ClassMethods
       def subscribes type, version = 1, opts = nil, &consumer
         if self.include? Euston::AggregateRoot

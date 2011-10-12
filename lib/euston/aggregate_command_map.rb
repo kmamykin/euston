@@ -60,7 +60,7 @@ module Euston
         aggregate_entry[:mappings].push_if_unique(mapping, command)
       end
 
-      def deliver_command(headers, command)
+      def deliver_command(headers, command, logger)
         args = [headers, command]
         query = {:kind => :construct, :type => headers.type}
         if (entry = @map.find_entry_with_mapping_match( query ))
@@ -71,6 +71,7 @@ module Euston
           return unless entry
           aggregate = load_aggregate(entry, *args)
         end
+        aggregate.log = logger
         aggregate.consume_command( headers, command )
       end
 
