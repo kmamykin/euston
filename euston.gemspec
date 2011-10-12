@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'euston'
-  s.version     = '1.1.0'
-  s.date        = '2011-10-03'
+  s.version     = '1.2.0'
+  s.date        = '2011-10-12'
   s.platform    = RUBY_PLATFORM.to_s == 'java' ? 'java' : Gem::Platform::RUBY
   s.authors     = ['Lee Henson', 'Guy Boertje']
   s.email       = ['lee.m.henson@gmail.com', 'guyboertje@gmail.com']
@@ -24,10 +24,12 @@ Gem::Specification.new do |s|
     lib/euston/command_handler.rb
     lib/euston/command_handler_private_method_names.rb
     lib/euston/command_headers.rb
+    lib/euston/errors.rb
     lib/euston/event.rb
     lib/euston/event_handler.rb
     lib/euston/event_handler_private_method_names.rb
     lib/euston/event_headers.rb
+    lib/euston/idempotence.rb
     lib/euston/null_logger.rb
     lib/euston/repository.rb
     lib/euston/version.rb

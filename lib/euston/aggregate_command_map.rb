@@ -60,7 +60,7 @@ module Euston
         aggregate_entry[:mappings].push_if_unique(mapping, command)
       end
 
-      def deliver_command(headers, command, logger)
+      def deliver_command(headers, command, logger = Euston::NullLogger.instance)
         args = [headers, command]
         query = {:kind => :construct, :type => headers.type}
         if (entry = @map.find_entry_with_mapping_match( query ))
