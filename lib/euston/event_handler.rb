@@ -10,13 +10,13 @@ module Euston
     module ClassMethods
       def subscribes type, version = 1, opts = nil, &consumer
         if self.include? Euston::AggregateRoot
-          opts = opts || { :id => :id }
+          o = { :id => :id }.merge opts
 
           self.class.send :define_method, id_from_event_method_name(type, version) do |event|
-            if opts[:id].respond_to? :call
-              opts[:id].call event
+            if o[:id].respond_to? :call
+              o[:id].call event
             else
-              event[opts[:id]]
+              event[o[:id]]
             end
           end
         end
