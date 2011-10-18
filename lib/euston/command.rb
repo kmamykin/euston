@@ -18,8 +18,16 @@ module Euston
       @headers[:id]
     end
 
+    def id= value
+      @headers[:id] = value
+    end
+
     def read_attribute_for_validation key
       @body[key]
+    end
+
+    def type
+      @headers[:type]
     end
 
     def to_hash
