@@ -71,6 +71,9 @@ module Euston
           return unless entry
           aggregate = load_aggregate(entry, *args)
         end
+
+        raise Euston::Errors::AggregateNotFoundError if aggregate.nil?
+
         aggregate.log = logger
         aggregate.consume_command( headers, command )
       end
