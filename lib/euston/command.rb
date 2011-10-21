@@ -23,7 +23,13 @@ module Euston
     end
 
     def read_attribute_for_validation key
-      @body[key]
+      match = /^__(.*)/.match(key.to_s)
+
+      if match.nil?
+        @body[key]
+      else
+        headers[match[1].to_sym]
+      end
     end
 
     def type
@@ -39,5 +45,9 @@ module Euston
     end
 
     attr_reader :body
+
+    validates :__id,        :presence => true, :format => { :with => /^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}$/ }
+    validates :__type,      :presence => true
+    validates :__version,   :presence => true, :numericality => { :greater_than => 0, :only_integer => true }
   end
 end
