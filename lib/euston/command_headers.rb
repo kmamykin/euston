@@ -1,25 +1,20 @@
 module Euston
   class CommandHeaders
-    attr_reader :id, :type, :version, :log_completion
+    attr_reader :id, :type, :version, :user_id
 
-    def initialize id, type, version, log_completion = false
+    def initialize id, type, version, user_id = nil
       @id = id
       @type = type
       @version = version
-      @log_completion = log_completion
+      @user_id = user_id
     end
 
     def to_hash
-      {
-        :id => id,
-        :type => type,
-        :version => version,
-        :log_completion => log_completion
-      }
+      Hash[:id, @id, :type, @type, :version, @version, :user_id, @user_id]
     end
 
     def self.from_hash hash
-      self.new hash[:id], hash[:type].to_sym, hash[:version], ( hash[:log_completion] || false )
+      self.new hash[:id], hash[:type].to_sym, hash[:version], hash[:user_id]
     end
 
     def to_s

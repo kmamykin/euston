@@ -164,7 +164,15 @@ module Euston
 
         if respond_to? name
           @log.debug "Calling #{name} with: #{message.inspect}"
-          method(name).call OpenStruct.new(message).freeze
+          m = method(name)
+          case m.arity
+          when 2
+            m.call headers, OpenStruct.new(message).freeze
+          when 1
+            m.call OpenStruct.new(message).freeze
+          else
+            m.call
+          end
         else
           raise "Couldn't deliver #{message_kind} (#{headers.type} v#{headers.version}) to #{self.class}. Did you forget #{expected_block_kind}?"
         end
