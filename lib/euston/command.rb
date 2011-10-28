@@ -22,6 +22,14 @@ module Euston
       @headers[:id] = value
     end
 
+    def publishing_user_id
+      @headers[:user_id]
+    end
+
+    def publishing_user_id= value
+      @headers[:user_id] = value
+    end
+
     def read_attribute_for_validation key
       match = /^__(.*)/.match(key.to_s)
 
