@@ -5,7 +5,7 @@ module Euston
     context 'duplicate command consumption' do
       let(:aggregate) { Sample::Widget.new }
       let(:aggregate2) { Sample::Widget.new }
-      let(:command) { { :headers => CommandHeaders.new(Euston.uuid.generate, :create_widget, 1),
+      let(:command) { { :headers => CommandHeaders.new(id: Euston.uuid.generate, type: 'create_widget', version: 1),
                         :body => { :id => Euston.uuid.generate } } }
 
       it 'does not handle the same command twice' do

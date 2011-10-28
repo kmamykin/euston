@@ -166,9 +166,9 @@ module Euston
           @log.debug "Calling #{name} with: #{message.inspect}"
           m = method(name)
           case m.arity
-          when 2
+          when 2, -2
             m.call headers, OpenStruct.new(message).freeze
-          when 1
+          when 1, -1
             m.call OpenStruct.new(message).freeze
           else
             m.call

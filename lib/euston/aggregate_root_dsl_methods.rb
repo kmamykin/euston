@@ -40,8 +40,8 @@ module Euston
       private
 
       def define_private_method name, &block
-        block = method(:null_block) if block.nil?
-        define_method name do |*args| instance_exec *args, &block end
+        #block = method(:null_block) if block.nil?
+        define_method name, &(block || method(:null_block))
       end
 
       def map_command(entry_point, type, command, opts)

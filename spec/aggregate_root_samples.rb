@@ -3,20 +3,20 @@ module Euston
     class Widget
       include Euston::AggregateRoot
 
-      created_by :create_widget do |command|
+      created_by :create_widget do |header, command|
         apply_event :widget_created, 1, command
       end
 
-      created_by :import_widget do |command|
+      created_by :import_widget do |header, command|
         apply_event :widget_imported, 1, :access_count => (@access_count || 0) + command.imported_count
       end
 
-      consumes :log_access_to_widget, :id => :widget_id do |command|
+      consumes :log_access_to_widget, :id => :widget_id do |header, command|
         apply_event :widget_access_logged, 1, :widget_id => command.widget_id,
                                        :access_count => @access_count + 1
       end
 
-      applies :widget_created, 1 do |event|
+      applies :widget_created, 1 do
         @access_count = 0
       end
 
@@ -32,11 +32,11 @@ module Euston
     class Product
       include Euston::AggregateRoot
 
-      created_by :create_product do |command|
+      created_by :create_product do |header, command|
         apply_event :product_created, 1, command
       end
 
-      created_by :import_product do |command|
+      created_by :import_product do |header, command|
         apply_event :product_imported, 1, :access_count => command.imported_count
       end
 

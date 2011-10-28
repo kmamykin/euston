@@ -6,17 +6,17 @@ module Euston
     let(:guid1) {Euston.uuid.generate}
     let(:guid2) {Euston.uuid.generate}
 
-    let(:command_cw) { { :headers => CommandHeaders.new(Euston.uuid.generate, :create_widget, 1),
+    let(:command_cw) { { :headers => CommandHeaders.new(id: Euston.uuid.generate, type: 'create_widget', version: 1),
                       :body => { :id => guid1} } }
-    let(:command_iw) { { :headers => CommandHeaders.new(Euston.uuid.generate, :import_widget, 1),
+    let(:command_iw) { { :headers => CommandHeaders.new(id: Euston.uuid.generate, type: 'import_widget', version: 1),
                       :body => { :id => guid1, :imported_count => 5 } } }
-    let(:command_aw) { { :headers => CommandHeaders.new(Euston.uuid.generate, :log_access_to_widget, 1),
+    let(:command_aw) { { :headers => CommandHeaders.new(id: Euston.uuid.generate, type: 'log_access_to_widget', version: 1),
                       :body => { :widget_id => guid1 } } }
-    let(:command_cp) { { :headers => CommandHeaders.new(Euston.uuid.generate, :create_product, 1),
+    let(:command_cp) { { :headers => CommandHeaders.new(id: Euston.uuid.generate, type: 'create_product', version: 1),
                       :body => { :id => guid2} } }
-    let(:command_ip) { { :headers => CommandHeaders.new(Euston.uuid.generate, :import_product, 1),
+    let(:command_ip) { { :headers => CommandHeaders.new(id: Euston.uuid.generate, type: 'import_product', version: 1),
                       :body => { :id => guid2, :imported_count => 5 } } }
-    let(:command_ap) { { :headers => CommandHeaders.new(Euston.uuid.generate, :log_access_to_product, 1),
+    let(:command_ap) { { :headers => CommandHeaders.new(id: Euston.uuid.generate, type: 'log_access_to_product', version: 1),
                       :body => { :product_id => guid2 } } }
 
     describe "when creating new Aggregates" do
