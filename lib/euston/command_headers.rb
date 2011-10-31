@@ -1,16 +1,17 @@
 module Euston
   class CommandHeaders
 
-    IMMUTABLE = [:id, :type, :version]
+    BASE_KEYS = [:id, :type, :version]
 
     def initialize hash
       arg_errors = []
-      IMMUTABLE.each do |arg|
+      BASE_KEYS.each do |arg|
         arg_errors << arg unless hash.has_key?(arg)
       end
       raise Errors::CommandHeadersArgumentError.new("Missing args: #{arg_errors.join(", ")}") if arg_errors.size > 0
       @headers = {}.merge(hash)
       @headers[:type] = @headers[:type].to_sym
+      @headers_keys = @headers.keys
     end
 
     def [] name
@@ -24,6 +25,10 @@ module Euston
 
     def to_hash
       @headers.dup
+    end
+
+    def ==(other)
+      @headers == other.to_hash
     end
 
     def self.from_hash hash
@@ -41,13 +46,13 @@ module Euston
 
     # >= 1.9.2
     def respond_to_missing?(name, incl_private)
-      is_dynamic_method?(name.to_sym) or super
+      is_dynamic_method?(name.to_sym) || super
     end
 
     private
 
     def is_dynamic_method? name
-      (@headers.keys - IMMUTABLE).include?(name)
+      (@headers_keys - BASE_KEYS).include?(name)
     end
   end
 end
