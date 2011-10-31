@@ -161,13 +161,12 @@ module Euston
 
       def deliver_message headers, message, name_method, message_kind, expected_block_kind
         name = self.class.send(name_method, headers.type, headers.version).to_sym
-
         if respond_to? name
           @log.debug "Calling #{name} with: #{message.inspect}"
           m = method(name)
           case m.arity
           when 2, -2
-            m.call headers, OpenStruct.new(message).freeze
+            m.call OpenStruct.new(headers.to_hash).freeze, OpenStruct.new(message).freeze
           when 1, -1
             m.call OpenStruct.new(message).freeze
           else
