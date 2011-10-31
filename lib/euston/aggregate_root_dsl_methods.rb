@@ -40,7 +40,6 @@ module Euston
       private
 
       def define_private_method name, &block
-        #block = method(:null_block) if block.nil?
         define_method name, &(block || method(:null_block))
       end
 
