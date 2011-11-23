@@ -21,8 +21,12 @@ module Euston
           end
         end
 
-        define_method event_handler_method_name(type, version) do |*args|
-          instance_exec *args, &consumer
+        method_name = event_handler_method_name type, version
+        define_method method_name, &consumer
+        new_method = instance_method method_name
+
+        define_method method_name do |*args|
+          new_method.bind(self).call *args
         end
       end
     end
