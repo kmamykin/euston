@@ -8,7 +8,7 @@ module Euston
     end
 
     module ClassMethods
-      def subscribes type, version = 1, opts = nil, &consumer
+      def subscribes type, version = 1, opts = {}, &consumer
         if self.include? Euston::AggregateRoot
           o = { :id => :id }.merge opts
 

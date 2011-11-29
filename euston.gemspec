@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'euston'
-  s.version     = '1.2.3'
-  s.date        = '2011-10-24'
+  s.version     = '1.2.4'
+  s.date        = '2011-11-29'
   s.platform    = RUBY_PLATFORM.to_s == 'java' ? 'java' : Gem::Platform::RUBY
   s.authors     = ['Lee Henson', 'Guy Boertje']
   s.email       = ['lee.m.henson@gmail.com', 'guyboertje@gmail.com']
@@ -35,6 +35,7 @@ Gem::Specification.new do |s|
     spec/aggregate_command_map_spec.rb
     spec/aggregate_root_samples.rb
     spec/aggregate_root_spec.rb
+    spec/command_headers_spec.rb
     spec/spec_helper.rb
   ]
   # = MANIFEST =
