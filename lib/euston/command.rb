@@ -4,7 +4,8 @@ module Euston
 
     def initialize body, dispatch_at = nil
       @headers = { :id => Uuid.generate,
-                   :type => self.class.to_s.split('::').pop.underscore.to_sym }
+                   :type => self.class.to_s.split('::').pop.underscore.to_sym,
+                   :version => 1 }
 
       @body = body
       @headers[:dispatch_at] = dispatch_at unless dispatch_at.nil?
@@ -49,7 +50,11 @@ module Euston
     end
 
     def version
-      1
+      @headers[:version]
+    end
+
+    def version= value
+      @headers[:version] = value
     end
 
     attr_reader :body
