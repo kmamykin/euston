@@ -12,10 +12,11 @@ module Euston
     end
 
     def to_hash
-      Hash[@source_message_type, @source_message].merge :id => id,
-                                                        :type => type,
-                                                        :version => version,
-                                                        :timestamp => timestamp
+      ((@source_message_type && @source_message) ? Hash[@source_message_type, @source_message] : {})
+        .merge :id => id,
+               :type => type,
+               :version => version,
+               :timestamp => timestamp
     end
 
     def self.from_hash hash
