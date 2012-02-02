@@ -22,7 +22,7 @@ module Euston
       end
 
       attr_accessor :log
-      attr_reader :aggregate_id
+      attr_reader :aggregate_id, :stream
 
       def initial_version
         @initial_version ||= 0
@@ -111,6 +111,7 @@ module Euston
 
       def apply_stream stream
         @aggregate_id = stream.stream_id
+        @stream = stream
 
         events = stream.committed_events
         return if events.empty?
