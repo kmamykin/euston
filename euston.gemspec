@@ -1,11 +1,11 @@
 Gem::Specification.new do |s|
   s.name        = 'euston'
-  s.version     = '1.2.8'
+  s.version     = '2.0'
   s.date        = '2012-02-02'
   s.platform    = RUBY_PLATFORM.to_s == 'java' ? 'java' : Gem::Platform::RUBY
   s.authors     = ['Lee Henson', 'Guy Boertje']
   s.email       = ['lee.m.henson@gmail.com', 'guyboertje@gmail.com']
-  s.summary     = %q{Cqrs tooling.}
+  s.summary     = %q{event-sourcing.rb}
   s.description = ''
   s.homepage    = 'http://github.com/leemhenson/euston'
 
@@ -43,11 +43,13 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
 
-  s.add_dependency 'activemodel',         '~> 3.1.0'
-  s.add_dependency 'activesupport',       '~> 3.1.0'
-
-  s.add_development_dependency 'fuubar',  '~> 0.0.0'
-  s.add_development_dependency 'rake',    '~> 0.9.2'
-  s.add_development_dependency 'rspec',   '~> 2.6.0'
-  s.add_development_dependency 'uuid',    '~> 2.3.0'
+  s.add_dependency 'activemodel',               '~> 3.1.0'
+  s.add_dependency 'activesupport',             '~> 3.1.0'
+  
+  s.add_development_dependency 'awesome_print', '~> 1.0.0'
+  s.add_development_dependency 'fuubar',        '~> 1.0.0'
+  s.add_development_dependency 'rake',          '~> 0.9.0'
+  s.add_development_dependency 'require_all',   '~> 1.2.0'
+  s.add_development_dependency 'rspec',         '~> 2.8.0'
+  s.add_development_dependency 'uuid',          '~> 2.3.0'
 end

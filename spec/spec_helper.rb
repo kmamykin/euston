@@ -1,8 +1,5 @@
+require 'ap'
+require 'require_all'
 require 'euston'
-require 'aggregate_root_samples'
 
-def apr(what, header='')
-  puts '', "== #{header} =="
-  puts what.inspect
-  puts ("="*(header.size + 6)), ''
-end
+# require_rel 'scenario'
