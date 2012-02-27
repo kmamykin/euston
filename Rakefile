@@ -65,7 +65,7 @@ end
 #
 #############################################################################
 
-default_rspec_opts = %w[--colour --format Fuubar]
+default_rspec_opts = %w[--colour --tty -b --format Fuubar]
 
 desc "Run all examples"
 RSpec::Core::RakeTask.new(:spec) do |t|
