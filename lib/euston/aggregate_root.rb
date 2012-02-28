@@ -44,22 +44,16 @@ module Euston
         @uncommitted_events ||= []
       end
 
+      def uncommitted_headers
+        @uncommitted_headers ||= {}
+      end
+
       def consume_command headers, command
         consume_message headers, command, :command, Euston::CommandHeaders, :send_command_to_method
       end
 
       def consume_event_subscription headers, event
         consume_message headers, event, :event_subscription, Euston::EventHeaders, :send_event_subscription_to_method
-      end
-
-      def replay_event headers, event
-        headers = Euston::EventHeaders.from_hash(headers) if headers.is_a?(Hash)
-
-        source_message = headers.source_message
-        committed_messages << source_message[:headers][:id] unless source_message.nil?
-
-        send_event_to_method headers, event
-        @initial_version = initial_version + 1
       end
 
       def take_snapshot
@@ -88,11 +82,6 @@ module Euston
                              :version => version,
                              :timestamp => Time.now.to_f
 
-        unless @current_message_headers.nil?
-          event.headers[@current_message_type] = { :headers  => @current_message_headers.to_hash,
-                                                   :body     => @current_message_body }
-        end
-
         send_event_to_method Euston::EventHeaders.from_hash(event.headers), event.body
         uncommitted_events << event
       end
@@ -118,6 +107,10 @@ module Euston
 
         raise "This aggregate cannot apply a historical event stream because it is not empty." unless uncommitted_events.empty? && initial_version == 0
 
+        unless stream.committed_headers[:source_message].nil?
+          committed_messages << stream.committed_headers[:source_message][:headers][:id]
+        end
+
         events.each_with_index do |event, i|
           replay_event event.headers, event.body
         end
@@ -128,6 +121,12 @@ module Euston
         raise Euston::Errors::InvalidCommandError, "An attempt was made to publish an invalid command from an aggregate root.\n\nAggregate id: #{@aggregate_id}\nAggregate type: #{self.class.name}\nCommand: #{command.to_hash}\nErrors: #{command.errors}" unless command.valid?
 
         uncommitted_commands << command
+      end
+
+      def replay_event headers, event
+        headers = Euston::EventHeaders.from_hash(headers) if headers.is_a?(Hash)
+        send_event_to_method headers, event
+        @initial_version = initial_version + 1
       end
 
       def send_command_to_method headers, command
@@ -148,10 +147,9 @@ module Euston
         headers = headers_type.from_hash(headers) if headers.is_a?(Hash)
 
         unless committed_messages.include? headers.id
-          @current_message_type     = message_type
-          @current_message_headers  = headers
-          @current_message_body     = body
-
+          uncommitted_headers[:source_message_type] = message_type
+          uncommitted_headers[:source_message]      = { headers: headers.to_hash, body: body } 
+          
           self.send send_method, headers, body
         end
 
@@ -164,9 +162,9 @@ module Euston
           @log.debug "Calling #{name} with: #{message.inspect}"
           m = method(name)
           case m.arity
-          when 2, -2
+          when 2, -1, -2
             m.call OpenStruct.new(headers.to_hash).freeze, OpenStruct.new(message).freeze
-          when 1, -1
+          when 1
             m.call OpenStruct.new(message).freeze
           else
             m.call

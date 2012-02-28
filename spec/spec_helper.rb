@@ -1,3 +1,5 @@
+require 'ap'
+require 'ostruct'
 require 'euston'
 require 'aggregate_root_samples'
 

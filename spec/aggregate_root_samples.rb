@@ -44,6 +44,7 @@ module Euston
         apply_event :product_access_logged, 1, :product_id => command.product_id,
                                        :access_count => @access_count + 1
       end
+      
       applies :product_created, 1 do |event|
         @access_count = 0
       end
