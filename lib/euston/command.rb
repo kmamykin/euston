@@ -7,7 +7,12 @@ module Euston
                    :type => self.class.to_s.split('::').pop.underscore.to_sym,
                    :version => 1 }
 
-      @body = body
+      @body = {}
+
+      self.class._validators.keys.reject { |k| k.to_s.start_with? '__' }.each do |key|
+        @body[key] = body[key]
+      end
+      
       @headers[:dispatch_at] = dispatch_at unless dispatch_at.nil?
     end
 
