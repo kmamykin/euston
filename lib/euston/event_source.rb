@@ -21,15 +21,18 @@ module Euston
                                      message[:body]
         end
 
-        callback :commit_created, @commit
-
+        commit = @commit
         @commit = nil
+
+        callback :commit_created, commit
       end
 
       def take_snapshot
         snapshot_metadata = self.class.message_map.get_newest_snapshot_metadata
         payload = send snapshot_metadata[:method_name]
-        Snapshot.new self.class, snapshot_metadata[:version], [], payload
+        snapshot = Snapshot.new self.class, snapshot_metadata[:version], [], payload
+
+        callback :snapshot_created, snapshot
       end
 
       private
@@ -49,6 +52,8 @@ module Euston
         end
 
         @commit.commands << command.to_hash
+
+        self
       end
 
       def restore_state_from_history history
@@ -79,6 +84,8 @@ module Euston
 
         @commit.store_event transition, version, body
         call_state_change_function transition, version, nil, body
+
+        self
       end
     end
 

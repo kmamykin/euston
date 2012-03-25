@@ -123,9 +123,9 @@ describe 'event source hydration' do
     let(:total_distance)  { (1..100).to_a.sample }
 
     let(:instance) do
-      ESH1::SnapshottingEventSource.new(message_class_finder, history).when(:commit_created) do |commit|
-        @commit = commit
-      end
+      ESH1::SnapshottingEventSource.new(message_class_finder, history)
+        .when(commit_created:   ->(commit)    { @commit = commit },
+              snapshot_created: ->(snapshot)  { @snapshot = snapshot })
     end
 
     describe 'when the event source is loaded from a snapshot and no commits' do
@@ -153,7 +153,8 @@ describe 'event source hydration' do
       let(:historical_event)    { ESH1::DistanceIncreased.v(1).new(dog_id: dog_id, total_distance: historical_distance).to_hash }
       let(:history)             { Euston::EventSourceHistory.new [ Euston::Commit.new(nil, [ historical_event ]) ], snapshot }
 
-      subject { instance.take_snapshot.payload }
+      before  { instance.take_snapshot }
+      subject { @snapshot.payload }
 
       its([:name])            { should == name }
       its([:total_distance])  { should == historical_distance }
