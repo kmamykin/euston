@@ -4,10 +4,10 @@ module Euston
       @empty_history ||= EventSourceHistory.new
     end
 
-    def initialize event_streams = [], snapshot = nil
-      @event_streams, @snapshot = event_streams, snapshot
+    def initialize commits = [], snapshot = nil
+      @commits, @snapshot = commits, snapshot
     end
 
-    attr_reader :event_streams, :snapshot
+    attr_reader :commits, :snapshot
   end
 end

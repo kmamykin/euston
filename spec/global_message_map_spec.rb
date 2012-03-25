@@ -216,7 +216,7 @@ describe 'global message map' do
 
       before do
         map.inspect_event_sources
-        
+
         begin
           map.find_command_handler command
         rescue Euston::UnroutableMessageError => e
@@ -261,12 +261,12 @@ describe 'global message map' do
     end
 
     describe 'when a command handler is sought' do
-      let(:command)       { GMM9::WalkDog.v(1).new(dog_id: dog_id).to_hash }
-      let(:dog_id)        { Uuid.generate }
-      let(:exceptions)    { [] }
-      let(:map)           { Euston::GlobalMessageMap.new Euston::Namespaces.new(GMM9, GMM9, GMM9) }
-      let(:event_streams) { [] }
-      
+      let(:command)     { GMM9::WalkDog.v(1).new(dog_id: dog_id).to_hash }
+      let(:dog_id)      { Uuid.generate }
+      let(:exceptions)  { [] }
+      let(:map)         { Euston::GlobalMessageMap.new Euston::Namespaces.new(GMM9, GMM9, GMM9) }
+      let(:commits)     { [] }
+
       before  { map.inspect_event_sources }
       subject { map.find_command_handler command }
 

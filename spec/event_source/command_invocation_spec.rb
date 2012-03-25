@@ -39,11 +39,11 @@ describe 'event source command invocation' do
     let(:event_stream)          { instance.consume command }
     let(:instance)              { ESCS1::EventSourceExample.new message_class_finder }
     let(:message_class_finder)  { Euston::MessageClassFinder.new Euston::Namespaces.new(ESCS1, ESCS1, ESCS1) }
-    
+
     subject { event_stream }
 
-    its(:source_message)  { should == command }
-    its(:events)          { should have(1).item }
+    its(:origin)  { should == command }
+    its(:events)  { should have(1).item }
 
     describe 'the first event in the event stream' do
       subject { event_stream.events[0] }

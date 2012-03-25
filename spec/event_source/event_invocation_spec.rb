@@ -38,11 +38,11 @@ describe 'event source event invocation' do
     let(:event_stream)          { instance.consume event }
     let(:instance)              { ESES1::EventSourceExample.new message_class_finder }
     let(:message_class_finder)  { Euston::MessageClassFinder.new Euston::Namespaces.new(ESES1, ESES1, ESES1) }
-    
+
     subject { event_stream }
 
-    its(:source_message)  { should == event }
-    its(:events)          { should have(1).item }
+    its(:origin)  { should == event }
+    its(:events)  { should have(1).item }
 
     describe 'the first event in the event stream' do
       subject { event_stream.events[0] }

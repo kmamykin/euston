@@ -1,4 +1,5 @@
 module Euston
+  class InitializationRedefinitionError < StandardError; end
   class InvalidCommandError < StandardError; end
   class InvalidTransitionStateError < StandardError; end
   class SnapshotRedefinitionError < StandardError; end

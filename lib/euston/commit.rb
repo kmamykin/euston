@@ -1,7 +1,7 @@
 module Euston
-  class EventStream
-    def initialize source_message, events = []
-      @source_message, @events = source_message, events
+  class Commit
+    def initialize origin, events = []
+      @origin, @events = origin, events
       @commands = []
     end
 
@@ -14,6 +14,10 @@ module Euston
       @events << { headers: headers, body: marshal_dup(body) }
     end
 
-    attr_reader :commands, :events, :source_message
+    attr_reader :commands, :events, :origin
+
+    def empty?
+      @commands.empty? && @events.empty?
+    end
   end
 end

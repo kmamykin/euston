@@ -2,11 +2,12 @@ module Euston
   class EventSourceMessageMap
     def initialize event_source_class
       @event_source = event_source_class
-      
-      @map = { commands:    {}, 
-               events:      {}, 
-               snapshots:   {},
-               transitions: {} }
+
+      @map = { initialization:  nil,
+               commands:        {},
+               events:          {},
+               snapshots:       {},
+               transitions:     {} }
     end
 
     def define section_name, message_name, args, &block
@@ -33,13 +34,23 @@ module Euston
       @message_defined_callback.call method_name, block
     end
 
+    def define_initializer &block
+      unless @map[:initialization].nil?
+        raise InitializationRedefinitionError, "Attempt made to redefine the initialization block in event source #{@event_source}"
+      end
+
+      @map[:initialization] = :defined
+
+      @initializer_defined_callback.call :initialization, block
+    end
+
     def define_snapshot action, args, &block
       args << 1
       version = args.shift
-      section = @map[:snapshots] 
+      section = @map[:snapshots]
       section[version] = {} unless section.has_key? version
       metadata = section[version]
-      
+
       if metadata.has_key? action
         raise SnapshotRedefinitionError, "Attempt made to redefine version #{version} of the snapshot :#{action} action in event source #{@event_source_class}"
       end
@@ -84,7 +95,7 @@ module Euston
       end
 
       version = versions.sort.pop
-      
+
       { method_name: method_name_for_snapshot(:save_to, version), version: version }
     end
 
@@ -93,7 +104,7 @@ module Euston
 
       @map[:commands].each do |type, versions|
         versions.each do |version, metadata|
-          subscriptions << {  event_source: @event_source, 
+          subscriptions << {  event_source: @event_source,
                               type: type,
                               version: version }
         end
@@ -118,6 +129,14 @@ module Euston
           end
         end
       end
+    end
+
+    def has_initializer?
+      !@map[:initialization].nil?
+    end
+
+    def initializer_defined &block
+      @initializer_defined_callback = block
     end
 
     def message_defined &block
