@@ -1,9 +1,9 @@
 describe 'event source state transition' do
   let(:command)               { ESST1::BuyMilk.v(1).new(id: milk_id).to_hash }
-  let(:event_stream)          { instance.consume command }
+  let(:commit)          { instance.consume command }
   let(:message_class_finder)  { Euston::MessageClassFinder.new Euston::Namespaces.new(ESST1, ESST1, ESST1) }
   let(:milk_id)               { Uuid.generate }
-  
+
   context 'with a valid state transition' do
     module ESST1
       class ExampleEventSource
@@ -38,7 +38,7 @@ describe 'event source state transition' do
     end
 
     let(:instance) { ESST1::ExampleEventSource.new message_class_finder }
-    
+
     describe 'the event source instance after the command was processed' do
       before  { instance.consume command }
       subject { instance }
@@ -69,11 +69,11 @@ describe 'event source state transition' do
     end
 
     let(:instance) { ESST1::InvalidEventSource.new message_class_finder }
-    
+
     describe 'the event source instance after the command was processed' do
       let(:exceptions)  { [] }
-      
-      before do 
+
+      before do
         begin
           instance.consume command
         rescue Euston::InvalidTransitionStateError => e

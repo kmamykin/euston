@@ -1,6 +1,7 @@
 module Euston
   module EventSource
     extend ActiveSupport::Concern
+    include Hollywood
 
     included do
       def initialize message_class_finder, history = EventSourceHistory.empty
@@ -20,7 +21,9 @@ module Euston
                                      message[:body]
         end
 
-        @commit
+        callback :commit_created, @commit
+
+        @commit = nil
       end
 
       def take_snapshot

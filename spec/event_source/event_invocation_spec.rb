@@ -35,31 +35,37 @@ describe 'event source event invocation' do
     let(:event)                 { ESES1::DogWalked.v(1).new(dog_id: dog_id, distance: distance).to_hash }
     let(:dog_id)                { Uuid.generate }
     let(:distance)              { (1..100).to_a.sample }
-    let(:event_stream)          { instance.consume event }
-    let(:instance)              { ESES1::EventSourceExample.new message_class_finder }
     let(:message_class_finder)  { Euston::MessageClassFinder.new Euston::Namespaces.new(ESES1, ESES1, ESES1) }
 
-    subject { event_stream }
+    let(:instance) do
+      ESES1::EventSourceExample.new(message_class_finder).when(:commit_created) do |commit|
+        @commit = commit
+      end
+    end
+
+    before  { instance.consume event }
+
+    subject { @commit }
 
     its(:origin)  { should == event }
     its(:events)  { should have(1).item }
 
     describe 'the first event in the event stream' do
-      subject { event_stream.events[0] }
+      subject { @commit.events[0] }
 
       it              { should be_a Hash }
       its([:headers]) { should be_a Hash }
       its([:body])    { should be_a Hash }
 
       describe 'headers' do
-        subject { event_stream.events[0][:headers] }
+        subject { @commit.events[0][:headers] }
 
         its([:type])    { should == :dog_sleeping }
         its([:version]) { should == 1 }
       end
 
       describe 'body' do
-        subject { event_stream.events[0][:body] }
+        subject { @commit.events[0][:body] }
 
         its([:dog_id])    { should == dog_id }
         its([:drooling])  { should be_true }

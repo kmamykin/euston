@@ -47,11 +47,16 @@ describe 'event source idempotence' do
   let(:message_class_finder)  { Euston::MessageClassFinder.new Euston::Namespaces.new(ESI1, ESI1, ESI1) }
   let(:distance)              { (1..10).to_a.sample }
   let(:dog_id)                { Uuid.generate }
+  let(:historical_distance)   { (1..10).to_a.sample }
 
-  let(:historical_distance) { (1..10).to_a.sample }
-  let(:instance)            { ESI1::StandardEventSource.new message_class_finder, history }
+  let(:instance) do
+    ESI1::StandardEventSource.new(message_class_finder, history).when(:commit_created) do |commit|
+      @commit = commit
+    end
+  end
 
-  subject { instance.consume command }
+  before  { instance.consume command }
+  subject { @commit }
 
   context "with an event source loaded solely from commits which already include the command's id" do
     let(:historical_event)  { ESI1::DogWalked.v(1).new(dog_id: dog_id, total_distance: historical_distance).to_hash }

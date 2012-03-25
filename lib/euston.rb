@@ -1,6 +1,7 @@
 require 'active_support/concern'
 require 'active_support/inflector'
 require 'active_model'
+require 'hollywood'
 require 'set'
 
 if RUBY_PLATFORM.to_s == 'java'

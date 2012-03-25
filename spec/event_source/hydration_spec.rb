@@ -45,18 +45,23 @@ describe 'event source hydration' do
 
     let(:historical_distance) { (1..10).to_a.sample }
     let(:historical_event)    { ESH1::DistanceIncreased.v(1).new(dog_id: dog_id, total_distance: historical_distance).to_hash }
-    let(:instance)            { ESH1::SimpleEventSource.new message_class_finder, history }
+
+    let(:instance) do
+      ESH1::SimpleEventSource.new(message_class_finder, history).when(:commit_created) do |commit|
+        @commit = commit
+      end
+    end
 
     context 'when the event source is loaded with history containing commits only' do
-      let(:commit)  { instance.consume event }
       let(:history) { Euston::EventSourceHistory.new [ Euston::Commit.new(nil, [ historical_event ]) ] }
 
-      subject { commit.events }
+      before  { instance.consume event }
+      subject { @commit.events }
 
       it { should have(1).item }
 
       describe 'the first event' do
-        subject { commit.events[0][:body] }
+        subject { @commit.events[0][:body] }
 
         its([:total_distance]) { should == distance + historical_distance }
       end
@@ -113,10 +118,15 @@ describe 'event source hydration' do
       end
     end
 
-    let(:instance)        { ESH1::SnapshottingEventSource.new message_class_finder, history }
     let(:name)            { Uuid.generate }
     let(:snapshot)        { Euston::Snapshot.new ESH1::SnapshottingEventSource, 1, [], name: name, total_distance: total_distance }
     let(:total_distance)  { (1..100).to_a.sample }
+
+    let(:instance) do
+      ESH1::SnapshottingEventSource.new(message_class_finder, history).when(:commit_created) do |commit|
+        @commit = commit
+      end
+    end
 
     describe 'when the event source is loaded from a snapshot and no commits' do
       let(:history) { Euston::EventSourceHistory.new [], snapshot }
