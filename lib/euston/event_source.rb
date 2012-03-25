@@ -19,6 +19,8 @@ module Euston
                                      message[:headers][:version],
                                      message[:headers],
                                      message[:body]
+
+          @idempotence_monitor.memorize message[:headers][:id]
         end
 
         commit = @commit
@@ -30,7 +32,7 @@ module Euston
       def take_snapshot
         snapshot_metadata = self.class.message_map.get_newest_snapshot_metadata
         payload = send snapshot_metadata[:method_name]
-        snapshot = Snapshot.new self.class, snapshot_metadata[:version], [], payload
+        snapshot = Snapshot.new self.class, snapshot_metadata[:version], @idempotence_monitor.message_ids, payload
 
         callback :snapshot_created, snapshot
       end

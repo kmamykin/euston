@@ -9,5 +9,13 @@ module Euston
     def already_encountered? message
       @message_ids.include? message[:headers][:id]
     end
+
+    def memorize message_id
+      @message_ids << message_id
+    end
+
+    def message_ids
+      @message_ids.to_a
+    end
   end
 end
