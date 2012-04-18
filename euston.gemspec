@@ -49,6 +49,9 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'awesome_print', '~> 1.0.0'
   s.add_development_dependency 'fuubar',        '~> 1.0.0'
+  s.add_development_dependency 'growl',         '~> 1.0.3'
+  s.add_development_dependency 'guard',         '~> 1.0.1'
+  s.add_development_dependency 'guard-rspec',   '~> 0.7.0'
   s.add_development_dependency 'rake',          '~> 0.9.0'
   s.add_development_dependency 'require_all',   '~> 1.2.0'
   s.add_development_dependency 'rspec',         '~> 2.8.0'
