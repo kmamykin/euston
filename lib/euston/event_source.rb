@@ -5,14 +5,15 @@ module Euston
 
     included do
       def initialize message_class_finder, history = EventSourceHistory.empty
+        @event_source_history = history
         @message_class_finder = message_class_finder
         initialization if self.class.message_map.has_initializer?
-        restore_state_from_history history
+        restore_state_from_history
         @idempotence_monitor = IdempotenceMonitor.new history
       end
 
       def consume message
-        @commit = Commit.new message
+        @commit = Commit.new message, @event_source_history.next_sequence
 
         unless @idempotence_monitor.already_encountered? message
           call_state_change_function message[:headers][:type],
@@ -58,18 +59,18 @@ module Euston
         self
       end
 
-      def restore_state_from_history history
-        unless history.snapshot.nil?
-          method_name = self.class.message_map.get_method_name_to_load_snapshot history.snapshot
+      def restore_state_from_history
+        unless @event_source_history.snapshot.nil?
+          method_name = self.class.message_map.get_method_name_to_load_snapshot @event_source_history.snapshot
 
           if respond_to? method_name
-            send method_name, history.snapshot.payload
+            send method_name, @event_source_history.snapshot.payload
           else
-            raise UnknownSnapshotError, "An attempt was made to load from an unsupported snapshot version #{history.snapshot.version} in event source #{self.class}."
+            raise UnknownSnapshotError, "An attempt was made to load from an unsupported snapshot version #{@event_source_history.snapshot.version} in event source #{self.class}."
           end
         end
 
-        history.commits.each do |commit|
+        @event_source_history.commits.each do |commit|
           commit.events.each do |event|
             call_state_change_function event[:headers][:type], event[:headers][:version], event[:headers], event[:body]
           end

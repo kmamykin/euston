@@ -5,14 +5,19 @@ module Euston
     end
 
     def self.defaults
-      @defaults ||= { age: 0, commits: [], snapshot: nil }
+      @defaults ||= { sequence: 1, commits: [], snapshot: nil }
     end
 
     def initialize opts = {}
       opts = self.class.defaults.merge opts
-      @age, @commits, @snapshot = opts[:age], opts[:commits], opts[:snapshot]
+      @commits, @sequence, @snapshot = opts[:commits], opts[:sequence], opts[:snapshot]
     end
 
-    attr_reader :age, :commits, :snapshot
+    def next_sequence
+      return 1 if @sequence == 1 && @commits.empty? && @snapshot.nil?
+      @sequence + @commits.length
+    end
+
+    attr_reader :commits, :sequence, :snapshot
   end
 end

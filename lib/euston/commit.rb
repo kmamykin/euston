@@ -1,7 +1,7 @@
 module Euston
   class Commit
-    def initialize origin, events = []
-      @origin, @events = origin, events
+    def initialize origin, sequence, events = []
+      @origin, @sequence, @events = origin, sequence, events
       @commands = []
     end
 
@@ -14,7 +14,7 @@ module Euston
       @events << { headers: headers, body: marshal_dup(body) }
     end
 
-    attr_reader :commands, :events, :origin
+    attr_reader :commands, :events, :origin, :sequence
 
     def empty?
       @commands.empty? && @events.empty?

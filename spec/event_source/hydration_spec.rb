@@ -53,7 +53,7 @@ describe 'event source hydration' do
     end
 
     context 'when the event source is loaded with history containing commits only' do
-      let(:history) { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, [ historical_event ]) ] }
+      let(:history) { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, 1, [ historical_event ]) ] }
 
       before  { instance.consume event }
       subject { @commit.events }
@@ -61,7 +61,7 @@ describe 'event source hydration' do
       it { should have(1).item }
 
       describe 'the first event' do
-        subject { @commit.events[0][:body] }
+        subject { @commit.tap { |c| ap history: history, historical_distance: historical_distance, distance: distance, commit: c; }.events[0][:body] }
 
         its([:total_distance]) { should == distance + historical_distance }
       end
@@ -69,7 +69,7 @@ describe 'event source hydration' do
 
     context 'when the event source is loaded with history containing snapshots' do
       let(:exceptions)  { [] }
-      let(:history)     { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, [ historical_event ]) ], snapshot: snapshot }
+      let(:history)     { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, 1, [ historical_event ]) ], snapshot: snapshot }
       let(:snapshot)    { Euston::Snapshot.new ESH1::SimpleEventSource, 1, [], {} }
 
       before do
@@ -140,7 +140,7 @@ describe 'event source hydration' do
     describe 'when the event source is loaded from a snapshot and an commit' do
       let(:historical_distance) { total_distance + 1 + (1..10).to_a.sample }
       let(:historical_event)    { ESH1::DistanceIncreased.v(1).new(dog_id: dog_id, total_distance: historical_distance).to_hash }
-      let(:history)             { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, [ historical_event ]) ], snapshot: snapshot }
+      let(:history)             { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, 1, [ historical_event ]) ], snapshot: snapshot }
 
       subject { instance }
 
@@ -151,7 +151,7 @@ describe 'event source hydration' do
     describe 'when a snapshot is taken' do
       let(:historical_distance) { (1..10).to_a.sample }
       let(:historical_event)    { ESH1::DistanceIncreased.v(1).new(dog_id: dog_id, total_distance: historical_distance).to_hash }
-      let(:history)             { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, [ historical_event ]) ], snapshot: snapshot }
+      let(:history)             { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, 1, [ historical_event ]) ], snapshot: snapshot }
 
       before  { instance.take_snapshot }
       subject { @snapshot.payload }

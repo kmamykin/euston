@@ -60,14 +60,14 @@ describe 'event source idempotence' do
 
   context "with an event source loaded solely from commits which already include the command's id" do
     let(:historical_event)  { ESI1::DogWalked.v(1).new(dog_id: dog_id, total_distance: historical_distance).to_hash }
-    let(:history)           { Euston::EventSourceHistory.new [ Euston::Commit.new(command, [ historical_event ]) ] }
+    let(:history)           { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(command, [ historical_event ]) ] }
 
     it { should be_empty }
   end
 
   context "with an event source loaded solely from snapshots which already include the command's id" do
     let(:snapshot)  { Euston::Snapshot.new ESI1::StandardEventSource, 1, [command[:headers][:id]], total_distance: historical_distance }
-    let(:history)   { Euston::EventSourceHistory.new [], snapshot }
+    let(:history)   { Euston::EventSourceHistory.new snapshot: snapshot }
 
     it { should be_empty }
   end
