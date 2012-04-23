@@ -1,49 +1,8 @@
-describe 'event source event invocation' do
-  context 'a command is consumed which causes a transition to a new state' do
-    module ESES1
-      class EventSourceExample
-        include Euston::EventSource
+describe 'event source event invocation', :golf do
+  context 'an event is consumed which causes a transition to a new state' do
+    let(:event) { namespace::GroupPlayingSlowly.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }
 
-        events
-
-        dog_walked :dog_id do |headers, body|
-          transition_to :dog_sleeping, 1, dog_id: body[:dog_id], drooling: true
-        end
-
-        transitions
-
-        dog_sleeping do |body|
-          @drooling = body[:drooling]
-        end
-      end
-
-      class DogWalked < Euston::Event
-        version 1 do
-          validates :dog_id, presence: true
-          validates :distance, presence: true
-        end
-      end
-
-      class DogSleeping < Euston::Event
-        version 1 do
-          validates :dog_id, presence: true
-          validates :drooling, presence: true
-        end
-      end
-    end
-
-    let(:event)                 { ESES1::DogWalked.v(1).new(dog_id: dog_id, distance: distance).to_hash }
-    let(:dog_id)                { Uuid.generate }
-    let(:distance)              { (1..100).to_a.sample }
-    let(:message_class_finder)  { Euston::MessageClassFinder.new Euston::Namespaces.new(ESES1, ESES1, ESES1) }
-
-    let(:instance) do
-      ESES1::EventSourceExample.new(message_class_finder).when(:commit_created) do |commit|
-        @commit = commit
-      end
-    end
-
-    before  { instance.consume event }
+    before  { secretary.consume event }
 
     subject { @commit }
 
@@ -60,15 +19,14 @@ describe 'event source event invocation' do
       describe 'headers' do
         subject { @commit.events[0][:headers] }
 
-        its([:type])    { should == :dog_sleeping }
+        its([:type])    { should == :warning_issued_for_slow_play }
         its([:version]) { should == 1 }
       end
 
       describe 'body' do
         subject { @commit.events[0][:body] }
 
-        its([:dog_id])    { should == dog_id }
-        its([:drooling])  { should be_true }
+        its([:player_id]) { should == player_id }
       end
     end
   end

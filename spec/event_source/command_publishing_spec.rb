@@ -1,44 +1,16 @@
-describe 'event source command publishing' do
-  module ESCP1
-    class OrderDogfood < Euston::Command
-      version 1 do
-        validates :dog_id,    presence: true
-        validates :quantity,  presence: true
-      end
-    end
-
-    class DogWalked < Euston::Event
-      version 1 do
-        validates :dog_id,    presence: true
-        validates :distance,  presence: true
-      end
-    end
-  end
-
-  let(:dog_id)                { Uuid.generate }
-  let(:event)                 { ESCP1::DogWalked.v(1).new(dog_id: dog_id, distance: (1..10).to_a.sample).to_hash }
-  let(:message_class_finder)  { Euston::MessageClassFinder.new ESCP1 }
-
+describe 'event source command publishing', :golf do
   context 'when the command being published is valid' do
-    module ESCP1
-      class ValidEventSourceExample
-        include Euston::EventSource
+    let(:history) do
+      commit = Euston::Commit.new nil, 1, [
+        namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash
+      ]
 
-        events
-
-        dog_walked :dog_id do |headers, body|
-          publish_command OrderDogfood.v(1).new dog_id: body[:dog_id], quantity: 1
-        end
-      end
+      Euston::EventSourceHistory.new commits: [ commit ]
     end
 
-    let(:instance) do
-      ESCP1::ValidEventSourceExample.new(message_class_finder).when(:commit_created) do |commit|
-        @commit = commit
-      end
-    end
+    let(:command) { namespace::StartGroup.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }
 
-    before { instance.consume event }
+    before { starter(history).consume command }
 
     subject { @commit }
 
@@ -47,42 +19,42 @@ describe 'event source command publishing' do
     describe "the first published command's headers" do
       subject { @commit.commands[0][:headers] }
 
-      its([:type])    { should == :order_dogfood }
+      its([:type])    { should == :check_for_slow_play }
       its([:version]) { should == 1 }
     end
 
     describe "the first published command's body" do
       subject { @commit.commands[0][:body] }
 
-      its([:dog_id])   { should == dog_id }
-      its([:quantity]) { should == 1 }
+      its([:course_id]) { should == course_id }
+      its([:player_id]) { should == player_id }
+      its([:time])      { should == time }
     end
   end
 
   context 'when the command being published is invalid' do
-    module ESCP1
-      class InvalidEventSourceExample
-        include Euston::EventSource
+    class Scenarios::GolfCourse::EventSourceWhichPublishesInvalidCommands
+      include Euston::EventSource
 
-        events
+      commands
 
-        dog_walked :dog_id do |headers, body|
-          publish_command OrderDogfood.v(1).new xyz: :abc
-        end
+      book_tee :course_id do |headers, body|
+        publish_command Scenarios::GolfCourse::CheckForSlowPlay.v(1).new xyz: :abc
       end
     end
 
-    let(:exceptions)  { [] }
-
-    let(:instance) do
-      ESCP1::InvalidEventSourceExample.new(message_class_finder).when(:commit_created) do |commit|
+    let(:buggy_event_source) do
+      namespace::EventSourceWhichPublishesInvalidCommands.new(message_class_finder).when(:commit_created) do |commit|
         @commit = commit
       end
     end
 
+    let(:command)     { namespace::BookTee.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }
+    let(:exceptions)  { [] }
+
     before do
       begin
-        instance.consume event
+        buggy_event_source.consume command
       rescue Euston::InvalidCommandError => e
         exceptions << e
       end

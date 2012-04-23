@@ -4,12 +4,12 @@ module Euston
     include Hollywood
 
     included do
-      def initialize message_class_finder, history = EventSourceHistory.empty
-        @event_source_history = history
+      def initialize message_class_finder, history = nil
+        @event_source_history = history || EventSourceHistory.empty
         @message_class_finder = message_class_finder
         initialization if self.class.message_map.has_initializer?
         restore_state_from_history
-        @idempotence_monitor = IdempotenceMonitor.new history
+        @idempotence_monitor = IdempotenceMonitor.new @event_source_history
       end
 
       def consume message
@@ -33,9 +33,9 @@ module Euston
       def take_snapshot
         snapshot_metadata = self.class.message_map.get_newest_snapshot_metadata
         payload = send snapshot_metadata[:method_name]
-        snapshot = Snapshot.new self.class, snapshot_metadata[:version], @idempotence_monitor.message_ids, payload
+        snapshot = Snapshot.new self.class, @event_source_history.sequence, snapshot_metadata[:version], @idempotence_monitor.message_ids, payload
 
-        callback :snapshot_created, snapshot
+        callback :snapshot_taken, snapshot
       end
 
       private

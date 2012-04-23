@@ -1,125 +1,57 @@
-describe 'event source snapshots' do
-  module ESSN1
-    class DogWalked < Euston::Event
-      version 1 do
-        validates :dog_id,    presence: true
-        validates :distance,  presence: true
-      end
-    end
-
-    class DistanceIncreased < Euston::Event
-      version 1 do
-        validates :dog_id,          presence: true
-        validates :total_distance,  presence: true
-      end
-    end
-  end
-
-  let(:event)                 { ESSN1::DogWalked.v(1).new(dog_id: dog_id, distance: distance).to_hash }
-  let(:message_class_finder)  { Euston::MessageClassFinder.new Euston::Namespaces.new(ESSN1, ESSN1, ESSN1) }
-  let(:distance)              { (1..10).to_a.sample }
-  let(:dog_id)                { Uuid.generate }
-
+describe 'event source snapshots', :golf do
   context 'with a event source that has no snapshot capability' do
-    module ESSN1
-      class UnsnapshottableEventSource
-        include Euston::EventSource
+    let(:history) do
+      commit1 = Euston::Commit.new nil, 1, [
+        namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash
+      ]
 
-        initialization do
-          @total_distance = 0
-        end
+      commit2 = Euston::Commit.new nil, 2, [
+        namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time + 1000).to_hash
+      ]
 
-        events
+      Euston::EventSourceHistory.new commits: [commit1, commit2]
+    end
 
-        dog_walked do |headers, body|
-          transition_to :distance_increased, 1, dog_id: body[:dog_id], total_distance: @total_distance + body[:distance]
-        end
-
-        transitions
-
-        distance_increased do |body|
-          @total_distance = body[:total_distance]
-        end
+    before do
+      begin
+        starter(history).take_snapshot
+      rescue Euston::UnknownSnapshotError => e
+        @exception = e
       end
     end
 
-    let(:instance) do
-      ESSN1::UnsnapshottableEventSource.new message_class_finder
-    end
+    subject { @exception }
 
-    context 'when a snapshot is requested' do
-      before do
-        instance.consume event
-
-        begin
-          instance.take_snapshot
-        rescue Euston::UnknownSnapshotError => e
-          @exception = e
-        end
-      end
-
-      subject { @exception }
-
-      it { should be_a Euston::UnknownSnapshotError }
-    end
+    it { should be_a Euston::UnknownSnapshotError }
   end
 
   context 'with a event source that has a snapshot capability' do
-    module ESSN1
-      class SnapshottingEventSource
-        include Euston::EventSource
+    let(:history) do
+      commit1 = Euston::Commit.new nil, 1, [
+        namespace::WarningIssuedForSlowPlay.v(1).new(player_id: :player_1).to_hash
+      ]
 
-        initialization do
-          @total_distance = 0
-        end
+      commit2 = Euston::Commit.new nil, 2, [
+        namespace::WarningIssuedForSlowPlay.v(1).new(player_id: player_id).to_hash
+      ]
 
-        events
-
-        dog_walked do |body|
-          transition_to :distance_increased, 1, dog_id: body[:dog_id], total_distance: @total_distance + body[:distance]
-        end
-
-        transitions
-
-        distance_increased do |body|
-          @total_distance = body[:total_distance]
-        end
-
-        snapshots
-
-        load_from 1 do |payload|
-          @total_distance = payload[:total_distance]
-        end
-
-        save_to 1 do
-          { total_distance: @total_distance }
-        end
-      end
+      Euston::EventSourceHistory.new commits: [commit1, commit2]
     end
 
-    let(:instance) do
-      ESSN1::SnapshottingEventSource.new(message_class_finder).when(:snapshot_created) do |snapshot|
-        @snapshot = snapshot
-      end
+    before  { secretary(history).take_snapshot }
+    subject { @snapshot.payload }
+
+    its('keys.length') { should == 1 }
+
+    describe do
+      subject             { @snapshot.payload[:players_with_warnings] }
+      its('keys.length')  { should == 2 }
+      its([:player_1])    { should == :slow_play }
     end
 
-    context 'when a snapshot is requested' do
-      before do
-        instance.consume event
-        instance.take_snapshot
-      end
-
-      subject { @snapshot }
-
-      its(:type)        { should == ESSN1::SnapshottingEventSource }
-      its(:version)     { should == 1}
-      its(:message_ids) { should include event[:headers][:id] }
-
-      describe 'it contains the correct snapshot payload' do
-        subject { @snapshot.payload }
-
-        its([:total_distance])  { should == distance }
-      end
+    describe do
+      subject { @snapshot.payload[:players_with_warnings][player_id] }
+      it      { should == :slow_play }
     end
   end
 end

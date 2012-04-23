@@ -1,80 +1,41 @@
-describe 'event source hydration' do
-  module ESH1
-    class DogWalked < Euston::Event
-      version 1 do
-        validates :dog_id,    presence: true
-        validates :distance,  presence: true
-      end
-    end
-
-    class DistanceIncreased < Euston::Event
-      version 1 do
-        validates :dog_id,          presence: true
-        validates :total_distance,  presence: true
-      end
-    end
-  end
-
-  let(:event)                 { ESH1::DogWalked.v(1).new(dog_id: dog_id, distance: distance).to_hash }
-  let(:message_class_finder)  { Euston::MessageClassFinder.new Euston::Namespaces.new(ESH1, ESH1, ESH1) }
-  let(:distance)              { (1..10).to_a.sample }
-  let(:dog_id)                { Uuid.generate }
-
+describe 'event source hydration', :golf do
   context 'with a event source with no snapshot capability' do
-    module ESH1
-      class SimpleEventSource
-        include Euston::EventSource
-
-        initialization do
-          @total_distance = 0
-        end
-
-        events
-
-        dog_walked do |headers, body|
-          transition_to :distance_increased, 1, dog_id: body[:dog_id], total_distance: @total_distance + body[:distance]
-        end
-
-        transitions
-
-        distance_increased do |body|
-          @total_distance = body[:total_distance]
-        end
-      end
-    end
-
-    let(:historical_distance) { (1..10).to_a.sample }
-    let(:historical_event)    { ESH1::DistanceIncreased.v(1).new(dog_id: dog_id, total_distance: historical_distance).to_hash }
-
-    let(:instance) do
-      ESH1::SimpleEventSource.new(message_class_finder, history).when(:commit_created) do |commit|
-        @commit = commit
-      end
-    end
-
     context 'when the event source is loaded with history containing commits only' do
-      let(:history) { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, 1, [ historical_event ]) ] }
-
-      before  { instance.consume event }
-      subject { @commit.events }
-
-      it { should have(1).item }
-
-      describe 'the first event' do
-        subject { @commit.tap { |c| ap history: history, historical_distance: historical_distance, distance: distance, commit: c; }.events[0][:body] }
-
-        its([:total_distance]) { should == distance + historical_distance }
+      class Scenarios::GolfCourse::Scorer
+        attr_reader :course_records
       end
+
+      let(:course_record) { 60 + rand(10) }
+
+      let(:history) do
+        commit = Euston::Commit.new nil, 1, [
+          namespace::CourseRecordBroken.v(1).new(course_id: course_id, player_id: player_id, score: course_record).to_hash
+        ]
+
+        Euston::EventSourceHistory.new commits: [ commit ]
+      end
+
+      subject { scorer(history).course_records[course_id] }
+
+      it { should == course_record }
     end
 
     context 'when the event source is loaded with history containing snapshots' do
       let(:exceptions)  { [] }
-      let(:history)     { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, 1, [ historical_event ]) ], snapshot: snapshot }
-      let(:snapshot)    { Euston::Snapshot.new ESH1::SimpleEventSource, 1, [], {} }
+
+      let(:history) do
+        commit = Euston::Commit.new nil, 1, [
+          namespace::CourseRecordBroken.v(1).new(course_id: course_id, player_id: player_id, score: rand(70)).to_hash
+        ]
+
+        snapshot = Euston::Snapshot.new namespace::Scorer, 2, 1, [], {}
+
+        Euston::EventSourceHistory.new commits: [ commit ], snapshot: snapshot
+      end
 
       before do
         begin
-          instance.consume event
+          scorer history
         rescue Euston::UnknownSnapshotError => e
           exceptions << e
         end
@@ -86,78 +47,47 @@ describe 'event source hydration' do
     end
   end
 
-  context 'with a snapshot' do
-    module ESH1
-      class SnapshottingEventSource
-        include Euston::EventSource
-
-        attr_reader :total_distance, :name
-
-        events
-
-        dog_walked do |headers, body|
-          transition_to :distance_increased, 1, dog_id: body[:dog_id], total_distance: @total_distance + body[:distance]
-        end
-
-        transitions
-
-        distance_increased do |body|
-          @total_distance = body[:total_distance]
-        end
-
-        snapshots
-
-        load_from 1 do |payload|
-          @name           = payload[:name]
-          @total_distance = payload[:total_distance]
-        end
-
-        save_to 1 do
-          { name: @name, total_distance: @total_distance }
-        end
-      end
-    end
-
-    let(:name)            { Uuid.generate }
-    let(:snapshot)        { Euston::Snapshot.new ESH1::SnapshottingEventSource, 1, [], name: name, total_distance: total_distance }
-    let(:total_distance)  { (1..100).to_a.sample }
-
-    let(:instance) do
-      ESH1::SnapshottingEventSource.new(message_class_finder, history)
-        .when(commit_created:   ->(commit)    { @commit = commit },
-              snapshot_created: ->(snapshot)  { @snapshot = snapshot })
-    end
-
+  context 'with a snapshotting event source' do
     describe 'when the event source is loaded from a snapshot and no commits' do
-      let(:history) { Euston::EventSourceHistory.new snapshot: snapshot }
+      class Scenarios::GolfCourse::Secretary
+        attr_reader :players_with_warnings
+      end
 
-      subject { instance }
+      let(:snapshot) do
+        Euston::Snapshot.new namespace::Secretary, 1, 1, [], players_with_warnings: { player_1: :foul_language }
+      end
 
-      its(:name)            { should == name }
-      its(:total_distance)  { should == total_distance }
+      let(:history) do
+        Euston::EventSourceHistory.new snapshot: snapshot
+      end
+
+      subject { secretary(history).players_with_warnings }
+
+      its([:player_1]) { should == :foul_language }
     end
 
     describe 'when the event source is loaded from a snapshot and an commit' do
-      let(:historical_distance) { total_distance + 1 + (1..10).to_a.sample }
-      let(:historical_event)    { ESH1::DistanceIncreased.v(1).new(dog_id: dog_id, total_distance: historical_distance).to_hash }
-      let(:history)             { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, 1, [ historical_event ]) ], snapshot: snapshot }
+      let(:snapshot) do
+        Euston::Snapshot.new namespace::Secretary, 1, 1, [], players_with_warnings: { player_1: :foul_language }
+      end
 
-      subject { instance }
+      let(:history) do
+        commit = Euston::Commit.new nil, 2, [
+          namespace::WarningIssuedForSlowPlay.v(1).new(player_id: player_id).to_hash
+        ]
 
-      its(:name)            { should == name }
-      its(:total_distance)  { should == historical_distance }
-    end
+        Euston::EventSourceHistory.new commits: [commit], snapshot: snapshot
+      end
 
-    describe 'when a snapshot is taken' do
-      let(:historical_distance) { (1..10).to_a.sample }
-      let(:historical_event)    { ESH1::DistanceIncreased.v(1).new(dog_id: dog_id, total_distance: historical_distance).to_hash }
-      let(:history)             { Euston::EventSourceHistory.new commits: [ Euston::Commit.new(nil, 1, [ historical_event ]) ], snapshot: snapshot }
+      subject { secretary(history).players_with_warnings }
 
-      before  { instance.take_snapshot }
-      subject { @snapshot.payload }
+      its('keys.length')  { should == 2 }
+      its([:player_1])    { should == :foul_language }
 
-      its([:name])            { should == name }
-      its([:total_distance])  { should == historical_distance }
+      describe do
+        subject { secretary(history).players_with_warnings[player_id] }
+        it      { should == :slow_play }
+      end
     end
   end
 end
