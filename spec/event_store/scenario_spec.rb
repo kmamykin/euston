@@ -57,35 +57,4 @@ describe 'mongo event store - scenario walkthrough', :golf, :mongo do
     its([:players_with_warnings]) { should satisfy { |p| p[player_1.to_sym] == :slow_play }}
     its([:players_with_warnings]) { should satisfy { |p| p[player_2.to_sym] == :slow_play }}
   end
-
-  # context 'when a user stores a snapshot' do
-  #   let(:commit)              { Factory.build :commit, event_source_id: snapshot.event_source_id }
-  #   let(:snapshot)            { Factory.build :snapshot }
-  #   let(:retrieved_snapshot)  { event_store.get_snapshot snapshot.event_source_id, snapshot.sequence }
-
-  #   before do
-  #     event_store.put_commit commit
-  #     sleep 0.5
-  #     event_store.put_snapshot snapshot
-  #   end
-
-  #   subject { retrieved_snapshot }
-
-  #   its(:event_source_id)         { should == snapshot.event_source_id }
-  #   its(:sequence)                { should == snapshot.sequence }
-  #   its(:type)                    { should == snapshot.type }
-  #   its(:version)                 { should == snapshot.version }
-
-  #   describe 'contained body' do
-  #     subject { retrieved_snapshot.body }
-  #     its(:keys)  { should satisfy { |keys| keys.length == snapshot.body.keys.length && keys.all? { |key| snapshot.body.symbolize_keys.keys.include? key.to_sym } } }
-  #     it          { should satisfy { |body| body.keys.all? { |key| snapshot.body.symbolize_keys[key.to_sym] == body[key] } } }
-  #   end
-
-  #   describe 'contained idempotence message ids' do
-  #     subject { retrieved_snapshot.idempotence_message_ids }
-  #     it      { should have(snapshot.idempotence_message_ids.length).items }
-  #     it      { should satisfy { |ids| ids.all? { |id| snapshot.idempotence_message_ids.include? id } } }
-  #   end
-  # end
 end
