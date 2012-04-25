@@ -5,7 +5,7 @@ describe 'event source command publishing', :golf do
         namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash
       ]
 
-      Euston::EventSourceHistory.new commits: [ commit ]
+      Euston::EventSourceHistory.new id: course_id, commits: [ commit ]
     end
 
     let(:command) { namespace::StartGroup.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }
@@ -44,7 +44,7 @@ describe 'event source command publishing', :golf do
     end
 
     let(:buggy_event_source) do
-      namespace::EventSourceWhichPublishesInvalidCommands.new(message_class_finder).when(:commit_created) do |commit|
+      namespace::EventSourceWhichPublishesInvalidCommands.new(message_class_finder, new_event_source_history).when(:commit_created) do |commit|
         @commit = commit
       end
     end

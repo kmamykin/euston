@@ -64,7 +64,7 @@ class EventStore
     end
   end
 
-  def get_snapshot event_source_id, max_sequence
+  def get_snapshot event_source_id, max_sequence = FIXNUM_MAX
     ErrorHandler.wrap do
       query = { '_id' => {  '$gt' => { 'event_source_id' => event_source_id, 'sequence' => nil },
                            '$lte' => { 'event_source_id' => event_source_id, 'sequence' => max_sequence } } }

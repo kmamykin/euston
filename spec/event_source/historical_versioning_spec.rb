@@ -2,7 +2,7 @@ describe 'event source historical versioning', :golf do
   context 'a new event source generates a commit' do
     let(:command) { namespace::BookTee.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }
 
-    before  { starter.consume command }
+    before  { starter(new_event_source_history).consume command }
 
     subject { @commit }
 
@@ -15,7 +15,7 @@ describe 'event source historical versioning', :golf do
         namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash
       ]
 
-      Euston::EventSourceHistory.new commits: [ commit ]
+      Euston::EventSourceHistory.new id: course_id, commits: [ commit ]
     end
 
     let(:command) { namespace::CancelTeeBooking.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }

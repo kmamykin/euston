@@ -2,7 +2,7 @@ describe 'event source event invocation', :golf do
   context 'an event is consumed which causes a transition to a new state' do
     let(:event) { namespace::GroupPlayingSlowly.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }
 
-    before  { secretary.consume event }
+    before  { secretary(new_event_source_history).consume event }
 
     subject { @commit }
 

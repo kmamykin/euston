@@ -38,7 +38,7 @@ module Euston
         body = send snapshot_metadata[:method_name]
         snapshot = Snapshot.new event_source_id: @event_source_history.id,
                                 sequence: @event_source_history.sequence,
-                                type: self.class,
+                                type: self.class.to_s,
                                 version: snapshot_metadata[:version],
                                 idempotence_message_ids: @idempotence_monitor.message_ids,
                                 body: body

@@ -9,7 +9,8 @@ module Euston
     end
 
     def initialize opts = {}
-      opts = self.class.defaults.merge(id: Uuid.generate).merge(opts)
+      opts = self.class.defaults.merge(opts)
+      raise 'You must pass an :id when creating an EventSourceHistory' if opts[:id].nil?
       @id, @commits, @sequence, @snapshot = opts[:id], opts[:commits], opts[:sequence], opts[:snapshot]
     end
 

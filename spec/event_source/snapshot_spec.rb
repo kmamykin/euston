@@ -9,7 +9,7 @@ describe 'event source snapshots', :golf do
         namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time + 1000).to_hash
       ]
 
-      Euston::EventSourceHistory.new commits: [commit1, commit2]
+      Euston::EventSourceHistory.new id: course_id, commits: [commit1, commit2]
     end
 
     before do
@@ -35,7 +35,7 @@ describe 'event source snapshots', :golf do
         namespace::WarningIssuedForSlowPlay.v(1).new(player_id: player_id).to_hash
       ]
 
-      Euston::EventSourceHistory.new commits: [commit1, commit2]
+      Euston::EventSourceHistory.new id: course_id, commits: [commit1, commit2]
     end
 
     before  { secretary(history).take_snapshot }

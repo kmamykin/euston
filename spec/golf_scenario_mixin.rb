@@ -4,12 +4,14 @@ module GolfScenarioMixin
   included do
     let(:course_id)       { Uuid.generate }
 
-    let(:event_source_id) { Uuid.generate }
+    let(:event_source_id) { course_id }
 
     let(:message_class_finder) do
       namespaces = Euston::Namespaces.new namespace, namespace, namespace
       Euston::MessageClassFinder.new namespaces
     end
+
+    let(:new_event_source_history) { Euston::EventSourceHistory.new id: course_id }
 
     let(:namespace) { Scenarios::GolfCourse }
 

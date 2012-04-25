@@ -37,7 +37,7 @@ describe 'event source state transition' do
       end
     end
 
-    let(:instance) { ESST1::InvalidEventSource.new message_class_finder }
+    let(:instance) { ESST1::InvalidEventSource.new message_class_finder, Euston::EventSourceHistory.new(id: milk_id) }
 
     describe 'the event source instance after the command was processed' do
       let(:exceptions)  { [] }
