@@ -13,7 +13,10 @@ module Euston
       end
 
       def consume message
-        @commit = Commit.new message, @event_source_history.next_sequence
+        @commit = Commit.new event_source_id: @event_source_history.id,
+                             sequence: @event_source_history.next_sequence,
+                             origin: message,
+                             type: self.class
 
         unless @idempotence_monitor.already_encountered? message
           call_state_change_function message[:headers][:type],
@@ -32,8 +35,13 @@ module Euston
 
       def take_snapshot
         snapshot_metadata = self.class.message_map.get_newest_snapshot_metadata
-        payload = send snapshot_metadata[:method_name]
-        snapshot = Snapshot.new self.class, @event_source_history.sequence, snapshot_metadata[:version], @idempotence_monitor.message_ids, payload
+        body = send snapshot_metadata[:method_name]
+        snapshot = Snapshot.new event_source_id: @event_source_history.id,
+                                sequence: @event_source_history.sequence,
+                                type: self.class,
+                                version: snapshot_metadata[:version],
+                                idempotence_message_ids: @idempotence_monitor.message_ids,
+                                body: body
 
         callback :snapshot_taken, snapshot
       end
@@ -54,7 +62,7 @@ module Euston
           raise InvalidCommandError, "An attempt was made to publish an invalid command from event source #{self.class}. Errors detected:\n\n#{command.errors.full_messages}"
         end
 
-        @commit.commands << command.to_hash
+        @commit.store_command command
 
         self
       end
@@ -64,7 +72,7 @@ module Euston
           method_name = self.class.message_map.get_method_name_to_load_snapshot @event_source_history.snapshot
 
           if respond_to? method_name
-            send method_name, @event_source_history.snapshot.payload
+            send method_name, @event_source_history.snapshot.body
           else
             raise UnknownSnapshotError, "An attempt was made to load from an unsupported snapshot version #{@event_source_history.snapshot.version} in event source #{self.class}."
           end
@@ -85,7 +93,7 @@ module Euston
           raise InvalidTransitionStateError, "Invalid attempt to transition to state #{transition} version #{version} in event source #{self.class}. Errors detected:\n\n#{event.errors.full_messages}"
         end
 
-        @commit.store_event transition, version, body
+        @commit.store_event event
         call_state_change_function transition, version, nil, body
 
         self

@@ -1,9 +1,20 @@
 module Euston
   class Snapshot
-    def initialize type, sequence, version, message_ids, payload
-      @type, @sequence, @version, @message_ids, @payload = type, sequence, version, message_ids, payload
+    def initialize options
+      options = {
+        body: {},
+        idempotence_message_ids: [],
+        version: 1
+      }.merge options
+
+      @event_source_id = options[:event_source_id]
+      @sequence = options[:sequence]
+      @type = options[:type]
+      @version = options[:version]
+      @idempotence_message_ids = options[:idempotence_message_ids]
+      @body = options[:body]
     end
 
-    attr_reader :type, :sequence, :version, :message_ids, :payload
+    attr_reader :event_source_id, :sequence, :type, :version, :idempotence_message_ids, :body
   end
 end

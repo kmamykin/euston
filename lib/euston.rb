@@ -1,26 +1,17 @@
 require 'active_support/concern'
 require 'active_support/inflector'
 require 'active_model'
+require 'enumeradical'
+require 'hash_symbolizer'
 require 'hollywood'
 require 'set'
+require 'singleton'
+require RUBY_PLATFORM.to_s == 'java' ? 'jmongo' : 'mongo'
 
-if RUBY_PLATFORM.to_s == 'java'
-  module Uuid
-    def self.generate
-      Java::JavaUtil::UUID.randomUUID().toString()
-    end
-  end
-else
-  require 'uuid'
-  Uuid = UUID.new
-end
-
-def marshal_dup object
-  return nil if object.nil?
-
-  Marshal.load(Marshal.dump object)
-end
-
+require 'euston/marshalling'
+require 'euston/constants'
+require 'euston/pluck'
+require 'euston/uuid'
 require 'euston/commit'
 require 'euston/errors'
 require 'euston/idempotence_monitor'
@@ -32,3 +23,10 @@ require 'euston/event_source_message_map'
 require 'euston/event_source'
 require 'euston/global_message_map'
 require 'euston/snapshot'
+require 'euston/mongo/config'
+require 'euston/mongo/errors'
+require 'euston/mongo/error_handler'
+require 'euston/mongo/concurrent_operation'
+require 'euston/mongo/stream'
+require 'euston/mongo/structure_initialiser'
+require 'euston/mongo/event_store'

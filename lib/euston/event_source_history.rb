@@ -1,7 +1,7 @@
 module Euston
   class EventSourceHistory
     def self.empty
-      @empty_history ||= EventSourceHistory.new
+      EventSourceHistory.new
     end
 
     def self.defaults
@@ -9,8 +9,8 @@ module Euston
     end
 
     def initialize opts = {}
-      opts = self.class.defaults.merge opts
-      @commits, @sequence, @snapshot = opts[:commits], opts[:sequence], opts[:snapshot]
+      opts = self.class.defaults.merge(id: Uuid.generate).merge(opts)
+      @id, @commits, @sequence, @snapshot = opts[:id], opts[:commits], opts[:sequence], opts[:snapshot]
     end
 
     def next_sequence
@@ -18,6 +18,6 @@ module Euston
       @sequence + @commits.length
     end
 
-    attr_reader :commits, :sequence, :snapshot
+    attr_reader :commits, :id, :sequence, :snapshot
   end
 end

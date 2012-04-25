@@ -8,11 +8,11 @@ describe 'event source hydration', :golf do
       let(:course_record) { 60 + rand(10) }
 
       let(:history) do
-        commit = Euston::Commit.new nil, 1, [
+        commit = Euston::Commit.new event_source_id: course_id, events: [
           namespace::CourseRecordBroken.v(1).new(course_id: course_id, player_id: player_id, score: course_record).to_hash
         ]
 
-        Euston::EventSourceHistory.new commits: [ commit ]
+        Euston::EventSourceHistory.new id: course_id, commits: [ commit ], sequence: 1
       end
 
       subject { scorer(history).course_records[course_id] }
@@ -24,13 +24,15 @@ describe 'event source hydration', :golf do
       let(:exceptions)  { [] }
 
       let(:history) do
-        commit = Euston::Commit.new nil, 1, [
+        commit = Euston::Commit.new event_source_id: course_id, sequence: 2, events: [
           namespace::CourseRecordBroken.v(1).new(course_id: course_id, player_id: player_id, score: rand(70)).to_hash
         ]
 
-        snapshot = Euston::Snapshot.new namespace::Scorer, 2, 1, [], {}
+        snapshot = Euston::Snapshot.new event_source_id: course_id,
+                                        sequence: 1,
+                                        type: namespace::Scorer
 
-        Euston::EventSourceHistory.new commits: [ commit ], snapshot: snapshot
+        Euston::EventSourceHistory.new id: course_id, commits: [ commit ], sequence: 2, snapshot: snapshot
       end
 
       before do
@@ -54,11 +56,14 @@ describe 'event source hydration', :golf do
       end
 
       let(:snapshot) do
-        Euston::Snapshot.new namespace::Secretary, 1, 1, [], players_with_warnings: { player_1: :foul_language }
+        Euston::Snapshot.new event_source_id: course_id,
+                             sequence: 1,
+                             type: namespace::Secretary,
+                             body: { players_with_warnings: { player_1: :foul_language } }
       end
 
       let(:history) do
-        Euston::EventSourceHistory.new snapshot: snapshot
+        Euston::EventSourceHistory.new id: course_id, snapshot: snapshot, sequence: 1
       end
 
       subject { secretary(history).players_with_warnings }
@@ -68,15 +73,18 @@ describe 'event source hydration', :golf do
 
     describe 'when the event source is loaded from a snapshot and an commit' do
       let(:snapshot) do
-        Euston::Snapshot.new namespace::Secretary, 1, 1, [], players_with_warnings: { player_1: :foul_language }
+        Euston::Snapshot.new event_source_id: course_id,
+                             sequence: 1,
+                             type: namespace::Secretary,
+                             body: { players_with_warnings: { player_1: :foul_language } }
       end
 
       let(:history) do
-        commit = Euston::Commit.new nil, 2, [
+        commit = Euston::Commit.new event_source_id: course_id, sequence: 2, events: [
           namespace::WarningIssuedForSlowPlay.v(1).new(player_id: player_id).to_hash
         ]
 
-        Euston::EventSourceHistory.new commits: [commit], snapshot: snapshot
+        Euston::EventSourceHistory.new id: course_id, commits: [commit], sequence: 1, snapshot: snapshot
       end
 
       subject { secretary(history).players_with_warnings }

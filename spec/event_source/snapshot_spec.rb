@@ -1,11 +1,11 @@
 describe 'event source snapshots', :golf do
   context 'with a event source that has no snapshot capability' do
     let(:history) do
-      commit1 = Euston::Commit.new nil, 1, [
+      commit1 = Euston::Commit.new event_source_id: course_id, events: [
         namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash
       ]
 
-      commit2 = Euston::Commit.new nil, 2, [
+      commit2 = Euston::Commit.new event_source_id: course_id, sequence: 2, events: [
         namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time + 1000).to_hash
       ]
 
@@ -27,11 +27,11 @@ describe 'event source snapshots', :golf do
 
   context 'with a event source that has a snapshot capability' do
     let(:history) do
-      commit1 = Euston::Commit.new nil, 1, [
+      commit1 = Euston::Commit.new event_source_id: course_id, events: [
         namespace::WarningIssuedForSlowPlay.v(1).new(player_id: :player_1).to_hash
       ]
 
-      commit2 = Euston::Commit.new nil, 2, [
+      commit2 = Euston::Commit.new event_source_id: course_id, sequence: 2, events: [
         namespace::WarningIssuedForSlowPlay.v(1).new(player_id: player_id).to_hash
       ]
 
@@ -39,18 +39,18 @@ describe 'event source snapshots', :golf do
     end
 
     before  { secretary(history).take_snapshot }
-    subject { @snapshot.payload }
+    subject { @snapshot.body }
 
     its('keys.length') { should == 1 }
 
     describe do
-      subject             { @snapshot.payload[:players_with_warnings] }
+      subject             { @snapshot.body[:players_with_warnings] }
       its('keys.length')  { should == 2 }
       its([:player_1])    { should == :slow_play }
     end
 
     describe do
-      subject { @snapshot.payload[:players_with_warnings][player_id] }
+      subject { @snapshot.body[:players_with_warnings][player_id] }
       it      { should == :slow_play }
     end
   end

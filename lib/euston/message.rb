@@ -6,9 +6,9 @@ module Euston
       namespaces = self.to_s.split '::'
       class_name = namespaces.pop
       message_type = class_name.underscore
-      
+
       namespace = Object
-    
+
       while (ns = namespaces.shift)
         namespace = namespace.const_get ns
       end
@@ -40,7 +40,7 @@ module Euston
       end
 
       namespace.const_set "#{class_name}_v#{version}", klass
-      
+
       klass.class_eval <<-EOC, __FILE__, __LINE__ + 1
         def initialize headers = nil, body = nil
           if !headers.nil? && body.nil?
@@ -50,19 +50,16 @@ module Euston
           raise 'Headers must be supplied to #{class_name} messages as a Hash' unless headers.nil? || headers.is_a?(Hash)
           raise 'Body must be supplied to #{class_name} messages as a Hash'    unless body.nil?    || body.is_a?(Hash)
 
-          if headers.nil?
-            @headers = { id: Uuid.generate }
-          else
-            @headers = Marshal.load(Marshal.dump headers)
-          end
-
+          @headers = { id: Uuid.generate }
+          @headers.merge! Marshal.load(Marshal.dump headers) unless headers.nil?
           @headers.merge! type: :#{message_type}, version: #{version}
+
           @body = body || {}
         end
       EOC
 
       klass.class_exec &block
-      
+
       versions[version] = klass
     end
 
