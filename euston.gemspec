@@ -64,11 +64,22 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'cranky',                '~> 0.3.1'
   s.add_development_dependency 'ffaker',                '~> 1.14.0'
   s.add_development_dependency 'fuubar',                '~> 1.0.0'
-  s.add_development_dependency 'growl',                 '~> 1.0.3'
   s.add_development_dependency 'guard',                 '~> 1.0.1'
   s.add_development_dependency 'guard-rspec',           '~> 0.7.0'
   s.add_development_dependency 'rake',                  '~> 0.9.0'
   s.add_development_dependency 'recursive-open-struct', '~> 0.2.1'
   s.add_development_dependency 'require_all',           '~> 1.2.0'
   s.add_development_dependency 'rspec',                 '~> 2.8.0'
+
+  # Guard *NIX
+  if RUBY_PLATFORM.downcase.include?("linux")
+    s.add_development_dependency 'rb-inotify',  '~> 0.8.8'
+    s.add_development_dependency 'libnotify'    '~> 0.7.2'
+  end
+
+  # Guard OSX
+  if RUBY_PLATFORM.downcase.include?("darwin")
+    s.add_development_dependency 'rb-fsevent',  '~> 0.9.0'
+    s.add_development_dependency 'growl',       '~> 1.0.3'
+  end
 end
