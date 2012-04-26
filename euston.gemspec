@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'euston'
-  s.version     = '2.0'
+  s.version     = '2.0.0'
   s.date        = '2012-02-02'
   s.platform    = RUBY_PLATFORM.to_s == 'java' ? 'java' : Gem::Platform::RUBY
   s.authors     = ['Lee Henson', 'Guy Boertje']
