@@ -28,7 +28,7 @@ describe 'mongo event store - scenario walkthrough', :golf, :mongo do
 
     event_store.put_commit @commit
 
-    sleep 0.5
+    sleep 0.25
 
     # reload snapshottable event source and take snapshot and store snapshot
     stream = event_store.find_streams_to_snapshot(2).first
