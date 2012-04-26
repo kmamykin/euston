@@ -71,15 +71,11 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'require_all',           '~> 1.2.0'
   s.add_development_dependency 'rspec',                 '~> 2.8.0'
 
-  # Guard *NIX
-  if RUBY_PLATFORM.downcase.include?("linux")
-    s.add_development_dependency 'rb-inotify',  '~> 0.8.8'
-    s.add_development_dependency 'libnotify'    '~> 0.7.2'
-  end
-
-  # Guard OSX
-  if RUBY_PLATFORM.downcase.include?("darwin")
+  if RbConfig::CONFIG['host_os'] =~ /darwin/i
     s.add_development_dependency 'rb-fsevent',  '~> 0.9.0'
     s.add_development_dependency 'growl',       '~> 1.0.3'
+  else
+    s.add_development_dependency 'rb-inotify',  '~> 0.8.8'
+    s.add_development_dependency 'libnotify'    '~> 0.7.2'
   end
 end
