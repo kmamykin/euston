@@ -1,5 +1,5 @@
 module Euston
-  class GlobalMessageMap
+  class GlobalEventSourceMap
     def initialize namespaces
       @namespaces = namespaces
       @command_map = {}
@@ -15,17 +15,17 @@ module Euston
 
     def inspect_event_sources
       event_sources = discover_event_sources
-      
+
       event_sources.each do |event_source|
         event_source.message_map.verify_message_classes @namespaces.commands, @namespaces.events
-        
+
         event_source.message_map.get_command_subscriptions.each do |subscription|
           @command_map[subscription[:type]] = {} unless @command_map.has_key? subscription[:type]
 
           command_type_map = @command_map[subscription[:type]]
           discovered_version = subscription[:version]
           discovered_event_source = subscription[:event_source]
-          
+
           if command_type_map.has_key? discovered_version
             conflicting_classes = [command_type_map[discovered_version], discovered_event_source]
             raise SubscriptionRedefinitionError, "The following two event sources are in conflict over who handles version #{subscription[:version]} of the #{subscription[:type]} command: #{conflicting_classes.join(', ')}"
@@ -44,7 +44,7 @@ module Euston
       @namespaces.event_sources.each do |namespace|
         discovered = namespace.constants.map do |constant|
           klass = namespace.const_get constant
-          
+
           if klass.included_modules.include? Euston::EventSource
             klass
           else

@@ -1,5 +1,5 @@
 module Euston
-  class EventSourceMessageMap
+  class MessageHandlerMessageMap
     def initialize event_source_class
       @event_source = event_source_class
 
