@@ -166,11 +166,12 @@ class EventStore
 
   def get_commit_from_document document
     Commit.new id:              document['headers']['id'],
-               event_source_id: document['_id']['event_source_id'],
-               sequence:        document['_id']['sequence'],
-               origin:          document['headers']['origin'].symbolize_keys(true),
                commands:        document['body']['commands'].pluck(:symbolize_keys, true),
+               duration:        document['headers']['duration'],
+               event_source_id: document['_id']['event_source_id'],
                events:          document['body']['events'].pluck(:symbolize_keys, true),
+               origin:          document['headers']['origin'].symbolize_keys(true),
+               sequence:        document['_id']['sequence'],
                timestamp:       Time.at(document['headers']['timestamp']['as_float']).utc,
                type:            document['headers']['type']
   end
@@ -188,6 +189,7 @@ class EventStore
         'version'     => 1,
         'origin'      => commit.origin,
         'dispatched'  => false,
+        'duration'    => commit.duration,
         'timestamp'   => {
           'as_float'    => commit.timestamp.to_f,
           'as_rfc3339'  => commit.timestamp.to_datetime.rfc3339(6)
