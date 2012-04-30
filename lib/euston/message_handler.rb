@@ -27,9 +27,10 @@ module MessageHandler
     def message_map
       @message_map ||= begin
         map = MessageHandlerMessageMap.new self
-        map.initializer_defined { |name, block| define_method name, &block }
-        map.message_defined     { |name, block| define_method name, &block }
-        map.snapshot_defined    { |name, block| define_method name, &block }
+
+        map.initializer_defined { |*args| define_dsl_method *args }
+        map.message_defined     { |*args| define_dsl_method *args }
+        map.snapshot_defined    { |*args| define_dsl_method *args }
         map
       end
     end
@@ -46,6 +47,20 @@ module MessageHandler
       else
         message_map.define @message_map_section, method, args, &block
       end
+    end
+
+    private
+
+    def define_dsl_method name, block
+      if block.nil?
+        define_method name, method(:no_op_block)
+      else
+        define_method name, &block
+      end
+    end
+
+    def no_op_block
+      # must be left empty
     end
   end
 end
