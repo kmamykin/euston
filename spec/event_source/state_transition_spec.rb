@@ -1,7 +1,7 @@
 describe 'event source state transition' do
   let(:command)               { ESST1::BuyMilk.v(1).new(id: milk_id).to_hash }
   let(:commit)                { instance.consume command }
-  let(:message_class_finder)  { Euston::MessageClassFinder.new Euston::Namespaces.new(ESST1, ESST1, ESST1) }
+  let(:message_class_finder)  { Euston::MessageClassFinder.new Euston::Namespaces.new(event_sources: ESST1, commands: ESST1, events: ESST1) }
   let(:milk_id)               { Uuid.generate }
 
   context 'with an state transition initiated with invalid data' do

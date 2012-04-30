@@ -7,7 +7,7 @@ describe 'event source idempotence', :golf do
 
     let(:history) do
       commit = Euston::Commit.new event_source_id: course_id, origin: command, events: [
-        namespace::ScoreLogged.v(1).new(course_id: course_id, player_id: player_id, score: score, time: time).to_hash
+        namespace::ScoreLogged.v(1).new({ sequence: 1 }, course_id: course_id, player_id: player_id, score: score, time: time).to_hash
       ]
 
       Euston::EventSourceHistory.new id: course_id, commits: [ commit ], sequence: 1

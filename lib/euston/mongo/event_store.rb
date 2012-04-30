@@ -64,6 +64,16 @@ class EventStore
     end
   end
 
+  def get_history event_source_id
+    snapshot = get_snapshot event_source_id
+
+    commit_criteria = { event_source_id: event_source_id }
+    commit_criteria[:min_sequence] = snapshot.sequence + 1 unless snapshot.nil?
+    commits = find_commits commit_criteria
+
+    EventSourceHistory.new id: event_source_id, commits: commits, snapshot: snapshot
+  end
+
   def get_snapshot event_source_id, max_sequence = FIXNUM_MAX
     ErrorHandler.wrap do
       query = { '_id' => {  '$gt' => { 'event_source_id' => event_source_id, 'sequence' => nil },

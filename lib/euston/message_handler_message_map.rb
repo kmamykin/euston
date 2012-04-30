@@ -61,6 +61,28 @@ module Euston
       @snapshot_defined_callback.call method_name, block
     end
 
+    def get_message_subscriptions
+      subscriptions = { commands: [], events: [] }
+
+      [:commands, :events].each do |subscription_type|
+        @map[subscription_type].each do |type, versions|
+          versions.each do |version, metadata|
+            subscriptions[subscription_type] << { event_source: @event_source,
+                                                  type:         type,
+                                                  version:      version }
+          end
+        end
+      end
+
+      subscriptions
+    end
+
+    def get_mapping_for_message message
+      message_type = message[:headers][:type]
+      mapping = @map[:commands][message_type] || @map[:events][message_type]
+      return mapping[message[:headers][:version]] unless mapping.nil?
+    end
+
     def get_method_name_for_message *args
       if args.length == 1
         hash = args[0].is_a?(Hash) ? args[0] : args[0].to_hash
@@ -97,20 +119,6 @@ module Euston
       version = versions.sort.pop
 
       { method_name: method_name_for_snapshot(:save_to, version), version: version }
-    end
-
-    def get_command_subscriptions
-      subscriptions = []
-
-      @map[:commands].each do |type, versions|
-        versions.each do |version, metadata|
-          subscriptions << {  event_source: @event_source,
-                              type: type,
-                              version: version }
-        end
-      end
-
-      subscriptions
     end
 
     def verify_message_classes command_namespaces, event_namespaces

@@ -20,3 +20,8 @@ RSpec.configure do |config|
   config.include MongoSpecMixin, :mongo
 end
 
+class Object
+  def tapout
+    tap { |x| ap x }
+  end
+end

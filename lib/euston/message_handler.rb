@@ -3,6 +3,26 @@ module Euston
 module MessageHandler
   extend ActiveSupport::Concern
 
+  included do
+    def consume message
+      call_state_change_function message[:headers][:type],
+                                 message[:headers][:version],
+                                 message[:headers],
+                                 message[:body]
+    end
+
+    private
+
+    def call_state_change_function type, version, headers, body
+      method_name = self.class.message_map.get_method_name_for_message(type, version).to_sym
+
+      args = [marshal_dup(body)]
+      args.unshift marshal_dup(headers) if method(method_name).arity > 1
+
+      send method_name, *args
+    end
+  end
+
   module ClassMethods
     def message_map
       @message_map ||= begin

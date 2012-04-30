@@ -1,4 +1,4 @@
-describe 'global event source map' do
+describe 'global message handler map' do
   context 'with an event source containing an unverifiable command' do
     module GMM2
       class EventSourceWithUnverifiableCommand
@@ -12,11 +12,11 @@ describe 'global event source map' do
     end
 
     let(:exceptions)  { [] }
-    let(:map)         { Euston::GlobalEventSourceMap.new Euston::Namespaces.new(GMM2) }
+    let(:map)         { Euston::GlobalMessageHandlerMap.new Euston::Namespaces.new(message_handlers: GMM2) }
 
     before do
       begin
-        map.inspect_event_sources
+        map.inspect_message_handlers
       rescue Euston::UnverifiableEventSource => e
         exceptions << e
       end
@@ -50,11 +50,11 @@ describe 'global event source map' do
     end
 
     let(:exceptions)  { [] }
-    let(:map)         { Euston::GlobalEventSourceMap.new Euston::Namespaces.new(GMM3, GMM3) }
+    let(:map)         { Euston::GlobalMessageHandlerMap.new Euston::Namespaces.new(message_handlers: GMM3, commands: GMM3) }
 
     before do
       begin
-        map.inspect_event_sources
+        map.inspect_message_handlers
       rescue Euston::UnverifiableEventSource => e
         exceptions << e
       end
@@ -79,11 +79,11 @@ describe 'global event source map' do
     end
 
     let(:exceptions)  { [] }
-    let(:map)         { Euston::GlobalEventSourceMap.new Euston::Namespaces.new(GMM4) }
+    let(:map)         { Euston::GlobalMessageHandlerMap.new Euston::Namespaces.new(message_handlers: GMM4) }
 
     before do
       begin
-        map.inspect_event_sources
+        map.inspect_message_handlers
       rescue Euston::UnverifiableEventSource => e
         exceptions << e
       end
@@ -117,11 +117,11 @@ describe 'global event source map' do
     end
 
     let(:exceptions)  { [] }
-    let(:map)         { Euston::GlobalEventSourceMap.new Euston::Namespaces.new(GMM5, [], GMM5) }
+    let(:map)         { Euston::GlobalMessageHandlerMap.new Euston::Namespaces.new(message_handlers: GMM5, events: GMM5) }
 
     before do
       begin
-        map.inspect_event_sources
+        map.inspect_message_handlers
       rescue Euston::UnverifiableEventSource => e
         exceptions << e
       end
@@ -146,11 +146,11 @@ describe 'global event source map' do
     end
 
     let(:exceptions)  { [] }
-    let(:map)         { Euston::GlobalEventSourceMap.new Euston::Namespaces.new(GMM6, [], GMM6) }
+    let(:map)         { Euston::GlobalMessageHandlerMap.new Euston::Namespaces.new(message_handlers: GMM6, events: GMM6) }
 
     before do
       begin
-        map.inspect_event_sources
+        map.inspect_message_handlers
       rescue Euston::UnverifiableEventSource => e
         exceptions << e
       end
@@ -184,11 +184,11 @@ describe 'global event source map' do
     end
 
     let(:exceptions)  { [] }
-    let(:map)         { Euston::GlobalEventSourceMap.new Euston::Namespaces.new(GMM7, [], GMM7) }
+    let(:map)         { Euston::GlobalMessageHandlerMap.new Euston::Namespaces.new(message_handlers: GMM7, events: GMM7) }
 
     before do
       begin
-        map.inspect_event_sources
+        map.inspect_message_handlers
       rescue Euston::UnverifiableEventSource => e
         exceptions << e
       end
@@ -212,13 +212,13 @@ describe 'global event source map' do
     describe 'when a command handler is sought' do
       let(:command)     { GMM8::WalkDog.v(1).new(dog_id: Uuid.generate).to_hash }
       let(:exceptions)  { [] }
-      let(:map)         { Euston::GlobalEventSourceMap.new Euston::Namespaces.new([], GMM8) }
+      let(:map)         { Euston::GlobalMessageHandlerMap.new Euston::Namespaces.new(commands: GMM8) }
 
       before do
-        map.inspect_event_sources
+        map.inspect_message_handlers
 
         begin
-          map.find_command_handler command
+          map.find_message_handlers command
         rescue Euston::UnroutableMessageError => e
           exceptions << e
         end
@@ -264,13 +264,20 @@ describe 'global event source map' do
       let(:command)     { GMM9::WalkDog.v(1).new(dog_id: dog_id).to_hash }
       let(:dog_id)      { Uuid.generate }
       let(:exceptions)  { [] }
-      let(:map)         { Euston::GlobalEventSourceMap.new Euston::Namespaces.new(GMM9, GMM9, GMM9) }
+      let(:map)         { Euston::GlobalMessageHandlerMap.new Euston::Namespaces.new(message_handlers: GMM9, commands: GMM9, events: GMM9) }
       let(:commits)     { [] }
+      let(:discovered)  { map.find_message_handlers command }
 
-      before  { map.inspect_event_sources }
-      subject { map.find_command_handler command }
+      before  { map.inspect_message_handlers }
+      subject { discovered }
 
-      it { should == GMM9::RoutableEventSource }
+      it { should have(1).item }
+
+      describe 'discovered handler' do
+        subject           { discovered[0] }
+        its([:category])  { should == :event_source }
+        its([:handler])   { should == GMM9::RoutableEventSource }
+      end
     end
   end
 end

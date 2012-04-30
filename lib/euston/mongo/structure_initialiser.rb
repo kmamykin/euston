@@ -16,10 +16,9 @@ class StructureInitialiser
   private
 
   def ensure_collections_exist
-    ['commits', 'snapshots', 'streams']
-      .reject { |name| @database.collection_names.include? name }
-      .to_a
-      .each   { |name| @database.create_collection name }
+    ['commits', 'snapshots', 'streams'].each do |name|
+      @database.create_collection name unless @database.collection_names.include? name
+    end
   end
 
   def ensure_indexes_exist

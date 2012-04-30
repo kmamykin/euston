@@ -50,15 +50,6 @@ module Euston
 
       private
 
-      def call_state_change_function transition, version, headers, body
-        method_name = self.class.message_map.get_method_name_for_message(transition, version).to_sym
-
-        args = [marshal_dup(body)]
-        args.unshift marshal_dup(headers) if method(method_name).arity > 1
-
-        send method_name, *args
-      end
-
       def publish_command command
         unless command.valid?
           raise InvalidCommandError, "An attempt was made to publish an invalid command from event source #{self.class}. Errors detected:\n\n#{command.errors.full_messages}"

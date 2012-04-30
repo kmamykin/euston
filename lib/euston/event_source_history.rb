@@ -5,20 +5,26 @@ module Euston
     end
 
     def self.defaults
-      @defaults ||= { sequence: 1, commits: [], snapshot: nil }
+      @defaults ||= { commits: [], snapshot: nil }
     end
 
     def initialize opts = {}
       opts = self.class.defaults.merge(opts)
       raise 'You must pass an :id when creating an EventSourceHistory' if opts[:id].nil?
-      @id, @commits, @sequence, @snapshot = opts[:id], opts[:commits], opts[:sequence], opts[:snapshot]
+      @id, @commits, @snapshot = opts[:id], opts[:commits], opts[:snapshot]
+
+      @sequence = 0
+      @sequence = @snapshot.sequence unless @snapshot.nil?
+      @sequence = @commits.last.events.last[:headers][:sequence] unless @commits.empty?
+
+      @type = @snapshot.type unless @snapshot.nil?
+      @type = @commits.last.type unless @commits.empty?
     end
 
     def next_sequence
-      return 1 if @sequence == 1 && @commits.empty? && @snapshot.nil?
-      @sequence + @commits.length
+      @sequence + 1
     end
 
-    attr_reader :commits, :id, :sequence, :snapshot
+    attr_reader :commits, :id, :sequence, :snapshot, :type
   end
 end

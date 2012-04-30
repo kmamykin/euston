@@ -2,7 +2,7 @@ describe 'event source command publishing', :golf do
   context 'when the command being published is valid' do
     let(:history) do
       commit = Euston::Commit.new event_source_id: course_id, events: [
-        namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash
+        namespace::TeeBooked.v(1).new({ sequence: 1 }, course_id: course_id, player_id: player_id, time: time).to_hash
       ]
 
       Euston::EventSourceHistory.new id: course_id, commits: [ commit ]
@@ -36,9 +36,9 @@ describe 'event source command publishing', :golf do
     class Scenarios::GolfCourse::EventSourceWhichPublishesInvalidCommands
       include Euston::EventSource
 
-      commands
+      events
 
-      book_tee :course_id do |headers, body|
+      tee_booked :course_id do |headers, body|
         publish_command Scenarios::GolfCourse::CheckForSlowPlay.v(1).new xyz: :abc
       end
     end
@@ -49,12 +49,12 @@ describe 'event source command publishing', :golf do
       end
     end
 
-    let(:command)     { namespace::BookTee.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }
+    let(:message)     { namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }
     let(:exceptions)  { [] }
 
     before do
       begin
-        buggy_event_source.consume command
+        buggy_event_source.consume message
       rescue Euston::InvalidCommandError => e
         exceptions << e
       end
