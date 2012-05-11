@@ -20,10 +20,10 @@ module Euston
 
     def find_message_class namespaces, type, name, version
       class_name = self.class.get_class_name name, version
-      namespace = namespaces.first { |namespace| namespace.const_defined? class_name }
+      namespace = namespaces.find { |namespace| namespace.const_defined? class_name }
 
       raise "Couldn't locate a class file defining version #{version} of the #{name} #{type}" if namespace.nil?
-      
+
       namespace.const_get class_name
     end
   end
