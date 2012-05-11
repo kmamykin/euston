@@ -70,8 +70,10 @@ describe 'mongo event store - commits', :golf, :mongo do
       end
 
       context 'and the user looks for undispatched commits' do
-        let(:undispatched_commits) { event_store.find_undispatched_commits }
+        let(:dispatcher_id)         { Uuid.generate }
+        let(:undispatched_commits)  { event_store.find_dispatchable_commits dispatcher_id }
 
+        before  { event_store.take_ownership_of_undispatched_commits dispatcher_id }
         subject { undispatched_commits }
         it      { should have(1).item }
 
@@ -82,7 +84,7 @@ describe 'mongo event store - commits', :golf, :mongo do
 
         context 'and the user marks the commit as dispatched' do
           before  { event_store.mark_commits_as_dispatched undispatched_commits }
-          subject { event_store.find_undispatched_commits }
+          subject { event_store.find_dispatchable_commits dispatcher_id }
           it      { should have(0).items }
         end
       end
