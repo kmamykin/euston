@@ -55,9 +55,13 @@ class EventStore
     end
   end
 
-  def find_undispatched_commits
+  def find_dispatchable_commits dispatcher_id
     ErrorHandler.wrap do
-      query = { 'headers.dispatched' => false }
+      query = {
+        'headers.dispatched' => false,
+        'headers.dispatcher_id' => dispatcher_id
+      }
+
       order = [ 'headers.timestamp.as_float', @ascending ]
 
       map_over @commits.find(query, sort: order, batch_size: 100).to_a, :get_commit_from_document
@@ -70,6 +74,8 @@ class EventStore
     commit_criteria = { event_source_id: event_source_id }
     commit_criteria[:min_sequence] = snapshot.sequence + 1 unless snapshot.nil?
     commits = find_commits commit_criteria
+
+    return nil if snapshot.nil? && commits.empty?
 
     EventSourceHistory.new id: event_source_id, commits: commits, snapshot: snapshot
   end
