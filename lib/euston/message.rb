@@ -5,6 +5,7 @@ module Euston
 
       namespaces = self.to_s.split '::'
       class_name = namespaces.pop
+      constant_name = "#{class_name}_v#{version}"
       message_type = class_name.underscore
 
       namespace = Object
@@ -12,6 +13,8 @@ module Euston
       while (ns = namespaces.shift)
         namespace = namespace.const_get ns
       end
+
+      return if namespace.const_defined? constant_name.to_sym
 
       klass = Class.new do
         extend ActiveModel::Naming
@@ -39,7 +42,7 @@ module Euston
         end
       end
 
-      namespace.const_set "#{class_name}_v#{version}", klass
+      namespace.const_set constant_name, klass
 
       klass.class_eval <<-EOC, __FILE__, __LINE__ + 1
         def initialize headers = nil, body = nil
