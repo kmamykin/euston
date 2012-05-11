@@ -53,14 +53,12 @@ module MessageHandler
 
     def define_dsl_method name, block
       if block.nil?
-        define_method name, method(:no_op_block)
+        define_method name do
+          # empty block
+        end
       else
         define_method name, &block
       end
-    end
-
-    def no_op_block
-      # must be left empty
     end
   end
 end
