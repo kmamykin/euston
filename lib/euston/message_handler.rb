@@ -15,9 +15,15 @@ module MessageHandler
 
     def call_state_change_function type, version, headers, body
       method_name = self.class.message_map.get_method_name_for_message(type, version).to_sym
+      method_arity = method(method_name).arity
 
-      args = [marshal_dup(body)]
-      args.unshift marshal_dup(headers) if method(method_name).arity > 1
+      args = if method_arity == 0
+        []
+      elsif method_arity == 1
+        [marshal_dup(body)]
+      else
+        [marshal_dup(headers), marshal_dup(body)]
+      end
 
       send method_name, *args
     end
