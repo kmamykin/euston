@@ -5,14 +5,6 @@ module Euston
       @message_map = {}
     end
 
-    def find_message_handlers message
-      mapping = @message_map[message[:headers][:type]]
-      raise UnroutableMessageError, "No known message handler is capable of handling version #{message[:headers][:version]} of the #{message[:headers][:type]} message." if mapping.nil?
-      handlers = mapping[message[:headers][:version]]
-      raise UnroutableMessageError, "No known message handler is capable of handling version #{message[:headers][:version]} of the #{message[:headers][:type]} message." if handlers.nil? || handlers.empty?
-      handlers
-    end
-
     def command_handlers
       handlers = []
 
@@ -31,6 +23,14 @@ module Euston
       end
 
       handlers.uniq
+    end
+
+    def find_message_handlers message
+      mapping = @message_map[message[:headers][:type]]
+      raise UnroutableMessageError, "No known message handler is capable of handling version #{message[:headers][:version]} of the #{message[:headers][:type]} message." if mapping.nil?
+      handlers = mapping[message[:headers][:version]]
+      raise UnroutableMessageError, "No known message handler is capable of handling version #{message[:headers][:version]} of the #{message[:headers][:type]} message." if handlers.nil? || handlers.empty?
+      handlers
     end
 
     def inspect_message_handlers
