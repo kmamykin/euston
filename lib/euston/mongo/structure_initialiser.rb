@@ -38,6 +38,11 @@ class StructureInitialiser
       ['body.events.headers.sequence', asc]
     ], unique: true, name: 'get_from_index'
 
+    commits.ensure_index [
+      ['_id.event_source_id', asc],
+      ['headers.origin.headers.id', asc]
+    ], unique: true, name: 'origin_index'
+
     streams.ensure_index [
       ['unsnapshotted', asc]
     ], unique: false, name: 'unsnapshotted_index'
