@@ -132,7 +132,7 @@ module Euston
             end
 
             unless found
-              raise UnverifiableEventSource, "Failed to find version #{version} of the #{type} #{category[:section].to_s.singularize} referred to in event source #{@event_source}."
+              raise UnverifiableEventSource, "Failed to find version #{version} of the #{type} #{category[:section].to_s.singularize} referred to in message handler #{@event_source}."
             end
           end
         end
