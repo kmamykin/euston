@@ -15,7 +15,7 @@ module Euston
       end
 
       def consume message
-        @commit = Commit.new event_source_id: @event_source_history.id,
+        @commit = Commit.new event_source_id: event_source_id,
                              sequence: @event_source_history.next_sequence,
                              origin: message,
                              type: self.class
@@ -38,7 +38,7 @@ module Euston
       def take_snapshot
         snapshot_metadata = self.class.message_map.get_newest_snapshot_metadata
         body = send snapshot_metadata[:method_name]
-        snapshot = Snapshot.new event_source_id: @event_source_history.id,
+        snapshot = Snapshot.new event_source_id: event_source_id,
                                 sequence: @event_source_history.sequence,
                                 type: self.class.to_s,
                                 version: snapshot_metadata[:version],
@@ -49,6 +49,10 @@ module Euston
       end
 
       private
+
+      def event_source_id
+        @event_source_history.id
+      end
 
       def publish_command command
         unless command.valid?
