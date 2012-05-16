@@ -69,7 +69,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake',                  '~> 0.9.0'
   s.add_development_dependency 'recursive-open-struct', '~> 0.2.1'
   s.add_development_dependency 'require_all',           '~> 1.2.0'
-  s.add_development_dependency 'rspec',                 '~> 2.8.0'
+  s.add_development_dependency 'rspec',                 '~> 2.10.0'
 
   if RbConfig::CONFIG['host_os'] =~ /darwin/i
     s.add_development_dependency 'rb-fsevent',  '~> 0.9.0'
