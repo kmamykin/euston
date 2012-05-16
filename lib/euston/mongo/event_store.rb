@@ -46,15 +46,6 @@ class EventStore
     end
   end
 
-  def find_streams_to_snapshot max_threshold
-    ErrorHandler.wrap do
-      query = { 'unsnapshotted' => { '$gte' => max_threshold } }
-      order = [ 'unsnapshotted', @descending ]
-
-      map_over @streams.find(query, sort: order).to_a, :get_stream_from_document
-    end
-  end
-
   def find_dispatchable_commits dispatcher_id
     ErrorHandler.wrap do
       query = {
@@ -65,6 +56,15 @@ class EventStore
       order = [ 'headers.timestamp.as_float', @ascending ]
 
       map_over @commits.find(query, sort: order, batch_size: 100).to_a, :get_commit_from_document
+    end
+  end
+
+  def find_streams_to_snapshot max_threshold
+    ErrorHandler.wrap do
+      query = { 'unsnapshotted' => { '$gte' => max_threshold } }
+      order = [ 'unsnapshotted', @descending ]
+
+      map_over @streams.find(query, sort: order).to_a, :get_stream_from_document
     end
   end
 
