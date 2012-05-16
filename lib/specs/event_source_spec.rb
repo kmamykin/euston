@@ -54,7 +54,9 @@ module Euston
           [@euston_incoming_messages].flatten.compact.each do |message|
             event_source.consume message.to_hash
           end
-        rescue StandardError => e
+
+          event_source.take_snapshot
+        rescue => e
           if @expect_error
             @exception_caught = e
           else
@@ -103,6 +105,17 @@ module Euston
       def snapshot_body &block
         prepare_snapshot do
           { body: instance_eval(&block) }
+        end
+      end
+
+      def snapshot_taken &block
+        describe "a snapshot is taken" do
+          subject do
+            run_scenario
+            OpenCascade.new @euston_snapshot_taken.body
+          end
+
+          instance_eval &block
         end
       end
 
