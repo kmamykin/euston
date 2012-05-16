@@ -42,8 +42,6 @@ module Euston
         end
       end
 
-      namespace.const_set constant_name, klass
-
       klass.class_eval <<-EOC, __FILE__, __LINE__ + 1
         def initialize headers = nil, body = nil
           if !headers.nil? && body.nil?
@@ -63,6 +61,7 @@ module Euston
 
       klass.class_exec &block
 
+      namespace.const_set constant_name, klass
       versions[version] = klass
     end
 
