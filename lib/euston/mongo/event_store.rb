@@ -59,6 +59,15 @@ class EventStore
     end
   end
 
+  def find_snapshots event_source_id
+    ErrorHandler.wrap do
+      query = { '_id.event_source_id' => event_source_id }
+      order = [ '_id.sequence', @ascending ]
+
+      map_over @snapshots.find(query, sort: order).to_a, :get_snapshot_from_document
+    end
+  end
+
   def find_streams_to_snapshot max_threshold
     ErrorHandler.wrap do
       query = { 'unsnapshotted' => { '$gte' => max_threshold } }
