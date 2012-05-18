@@ -2,10 +2,11 @@ module Euston
 module Mongo
 
 class MessageBus
-  def initialize message_class_finder, global_message_handler_map, event_store
+  def initialize message_class_finder, global_message_handler_map, event_store, logger = Euston::NullLogger.instance
     @event_store = event_store
     @global_message_handler_map = global_message_handler_map
     @message_class_finder = message_class_finder
+    @log = logger
   end
 
   def handle_message message, handler = nil
@@ -20,21 +21,26 @@ class MessageBus
 
   private
 
+  def build_event_source_handler handler_type, message, mapping
+    start_time = Time.now.to_f
+    event_source_id = message[:body][mapping[:identifier]]
+    history = @event_store.get_history(event_source_id) || EventSourceHistory.new(id: event_source_id)
+
+    handler_type.new(@message_class_finder, history).when(:commit_created) do |commit|
+      commit.duration = Time.now.to_f - start_time
+      @event_store.put_commit commit
+    end
+  end
+
   def invoke_handler handler_type, message
     mapping = handler_type.message_map.get_mapping_for_message message
-
-    if handler_type.included_modules.include? EventSource
-      start_time = Time.now.to_f
-      event_source_id = message[:body][mapping[:identifier]]
-      history = @event_store.get_history(event_source_id) || EventSourceHistory.new(id: event_source_id)
-
-      handler_type.new(@message_class_finder, history).when(:commit_created) do |commit|
-        commit.duration = Time.now.to_f - start_time
-        @event_store.put_commit commit
-      end.consume message
+    handler = if handler_type.included_modules.include?(EventSource)
+      build_event_source_handler(handler_type, message, mapping)
     else
-      handler_type.new.consume message
+      handler_type.new
     end
+
+    handler.tap { |h| h.log = @log }.consume message
   end
 end
 

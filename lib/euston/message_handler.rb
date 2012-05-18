@@ -11,6 +11,14 @@ module MessageHandler
                                  message[:body]
     end
 
+    def log
+      @euston_logger ||= Euston::NullLogger.instance
+    end
+
+    def log= logger
+      @euston_logger = logger
+    end
+
     private
 
     def call_state_change_function type, version, headers, body
