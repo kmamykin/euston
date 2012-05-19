@@ -25,6 +25,12 @@ class EventStore
     @descending = ::Mongo::DESCENDING
   end
 
+  def already_processed_message? event_source_id, message_id
+    ErrorHandler.wrap do
+      !@commits.find_one('_id.event_source_id' => event_source_id, 'headers.origin.headers.id' => message_id).nil?
+    end
+  end
+
   def find_commits options = {}
     ErrorHandler.wrap do
       if options.keys.empty?

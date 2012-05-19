@@ -11,7 +11,6 @@ module Euston
         @message_class_finder = message_class_finder
         initialization if self.class.message_map.has_initializer?
         restore_state_from_history
-        @idempotence_monitor = IdempotenceMonitor.new @event_source_history
       end
 
       def consume message
@@ -20,14 +19,10 @@ module Euston
                              origin: message,
                              type: self.class
 
-        unless @idempotence_monitor.already_encountered? message
-          call_state_change_function message[:headers][:type],
-                                     message[:headers][:version],
-                                     message[:headers],
-                                     message[:body]
-
-          @idempotence_monitor.memorize message[:headers][:id]
-        end
+        call_state_change_function message[:headers][:type],
+                                   message[:headers][:version],
+                                   message[:headers],
+                                   message[:body]
 
         commit = @commit
         @commit = nil
@@ -38,11 +33,11 @@ module Euston
       def take_snapshot
         snapshot_metadata = self.class.message_map.get_newest_snapshot_metadata
         body = send snapshot_metadata[:method_name]
+
         snapshot = Snapshot.new event_source_id: event_source_id,
                                 sequence: @event_source_history.sequence,
                                 type: self.class.to_s,
                                 version: snapshot_metadata[:version],
-                                idempotence_message_ids: @idempotence_monitor.message_ids,
                                 body: body
 
         callback :snapshot_taken, snapshot

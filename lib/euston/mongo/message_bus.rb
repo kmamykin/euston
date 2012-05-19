@@ -22,8 +22,10 @@ class MessageBus
   private
 
   def build_event_source_handler handler_type, message, mapping
-    start_time = Time.now.to_f
     event_source_id = message[:body][mapping[:identifier]]
+    return nil if @event_store.already_processed_message? event_source_id, message[:headers][:id]
+
+    start_time = Time.now.to_f
     history = @event_store.get_history(event_source_id) || EventSourceHistory.new(id: event_source_id)
 
     handler_type.new(@message_class_finder, history).when(:commit_created) do |commit|
@@ -34,13 +36,14 @@ class MessageBus
 
   def invoke_handler handler_type, message
     mapping = handler_type.message_map.get_mapping_for_message message
+
     handler = if handler_type.included_modules.include?(EventSource)
       build_event_source_handler(handler_type, message, mapping)
     else
       handler_type.new
     end
 
-    handler.tap { |h| h.log = @log }.consume message
+    handler.tap { |h| h.log = @log }.consume(message) unless handler.nil?
   end
 end
 

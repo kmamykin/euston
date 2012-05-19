@@ -31,21 +31,21 @@ class StructureInitialiser
       ['headers.dispatched', asc],
       ['headers.dispatcher_id', asc],
       ['headers.timestamp.as_float', asc]
-    ], unique: false, name: 'dispatched_index'
+    ], unique: false, name: 'dispatched_commits'
 
     commits.ensure_index [
       ['_id.event_source_id', asc],
       ['body.events.headers.sequence', asc]
-    ], unique: true, name: 'get_from_index'
+    ], unique: false, name: 'commits_by_event_sequence'
 
     commits.ensure_index [
       ['_id.event_source_id', asc],
       ['headers.origin.headers.id', asc]
-    ], unique: true, name: 'origin_index'
+    ], unique: true, name: 'commit_idempotence_by_origin'
 
     streams.ensure_index [
       ['unsnapshotted', asc]
-    ], unique: false, name: 'unsnapshotted_index'
+    ], unique: false, name: 'unsnapshotted_streams'
   end
 end
 
