@@ -13,9 +13,19 @@ module Euston
       raise 'You must pass an :id when creating an EventSourceHistory' if opts[:id].nil?
       @id, @commits, @snapshot = opts[:id], opts[:commits], opts[:snapshot]
 
-      @sequence = 0
-      @sequence = @snapshot.sequence unless @snapshot.nil?
-      @sequence = @commits.last.events.last[:headers][:sequence] unless @commits.empty?
+      @sequence = if @snapshot.nil?
+        0
+      else
+        @snapshot.sequence
+      end
+
+      unless @commits.empty?
+        @sequence = if @commits.last.empty?
+          @commits.last.sequence
+        else
+          @commits.last.events.last[:headers][:sequence]
+        end
+      end
 
       @type = @snapshot.type unless @snapshot.nil?
       @type = @commits.last.type unless @commits.empty?
