@@ -41,11 +41,18 @@ class EventStore
 
         query = {
           '_id.event_source_id' => options[:event_source_id],
-          'body.events.headers.sequence' => {
-            '$gte' => options[:min_sequence],
-            '$lte' => options[:max_sequence] } }
+          '$or' => [{
+            'body.events.headers.sequence' => {
+              '$gte' => options[:min_sequence],
+              '$lte' => options[:max_sequence] },
+          }, {
+            '_id.sequence' => {
+              '$gte' => options[:min_sequence],
+              '$lte' => options[:max_sequence] }
+          }]
+        }
 
-        order = [ 'body.events.headers.sequence', @ascending ]
+        order = [ '_id.sequence', @ascending ]
       end
 
       map_over @commits.find(query, sort: order).to_a, :get_commit_from_document
