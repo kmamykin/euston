@@ -3,7 +3,6 @@ module Euston
     def initialize options
       options = {
         body: {},
-        idempotence_message_ids: [],
         version: 1
       }.merge options
 
@@ -11,10 +10,9 @@ module Euston
       @sequence                 = options[:sequence]
       @type                     = options[:type]
       @version                  = options[:version]
-      @idempotence_message_ids  = options[:idempotence_message_ids]
       @body                     = options[:body]
     end
 
-    attr_reader :event_source_id, :sequence, :type, :version, :idempotence_message_ids, :body
+    attr_reader :event_source_id, :sequence, :type, :version, :body
   end
 end

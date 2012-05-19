@@ -241,7 +241,6 @@ class EventStore
         'sequence'         => snapshot.sequence
       },
       'headers' => {
-        'idempotence_message_ids' => snapshot.idempotence_message_ids,
         'type'                    => snapshot.type,
         'version'                 => snapshot.version
       },
@@ -254,7 +253,6 @@ class EventStore
                  sequence:                document['_id']['sequence'],
                  type:                    document['headers']['type'],
                  version:                 document['headers']['version'],
-                 idempotence_message_ids: document['headers']['idempotence_message_ids'],
                  body:                    document['body'].symbolize_keys(true)
   end
 
