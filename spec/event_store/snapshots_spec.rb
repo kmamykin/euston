@@ -22,12 +22,6 @@ describe 'mongo event store - snapshots', :golf, :mongo do
       its(:keys)  { should satisfy { |keys| keys.length == snapshot.body.keys.length && keys.all? { |key| snapshot.body.symbolize_keys.keys.include? key.to_sym } } }
       it          { should satisfy { |body| body.keys.all? { |key| snapshot.body.symbolize_keys[key.to_sym] == body[key] } } }
     end
-
-    describe 'contained idempotence message ids' do
-      subject { retrieved_snapshot.idempotence_message_ids }
-      it      { should have(snapshot.idempotence_message_ids.length).items }
-      it      { should satisfy { |ids| ids.all? { |id| snapshot.idempotence_message_ids.include? id } } }
-    end
   end
 
   context 'when a user retrieves a snapshot using a particular sequence number' do
