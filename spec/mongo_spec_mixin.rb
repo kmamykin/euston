@@ -6,19 +6,22 @@ module MongoSpecMixin
   end
 
   included do
+    let(:mongo_connection)  { Mongo::Connection.from_uri 'mongodb://127.0.0.1:27017/?safe=true;fsync=true;w=1;' }
+    let(:mongo_db)          { mongo_connection.db MongoSpecMixin.test_database }
+
     before :each do
-      connection = Mongo::Connection.from_uri 'mongodb://0.0.0.0:27017/?safe=true;fsync=true;w=1;'
-      db = connection.db MongoSpecMixin.test_database
-      db.collections.select { |c| c.name !~ /system/ }.each { |c| db.drop_collection c.name }
+      mongo_db.collections.select { |c| c.name !~ /system/ }.to_a.each { |c| mongo_db.drop_collection c.name }
     end
 
     let(:event_store) do
-      begin
-        Euston::Mongo::EventStore.build do |config|
-          config.database = MongoSpecMixin.test_database
-        end
-      rescue => e
+      Euston::Mongo::EventStore.build do |config|
+        config.database = MongoSpecMixin.test_database
       end
+    end
+
+    after :each do
+      sleep 1   # give forked threads a chance to complete (e.g. increment_stream_position_after_commit)
+      mongo_connection.close
     end
   end
 end

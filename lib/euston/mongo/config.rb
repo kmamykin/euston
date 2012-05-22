@@ -3,7 +3,7 @@ module Mongo
 
 class Config
   def uri
-    @uri ||= 'mongodb://0.0.0.0:27017/?safe=true;fsync=true;w=1;'
+    @uri ||= 'mongodb://127.0.0.1:27017/?safe=true;fsync=true;w=1;'
   end
 
   attr_writer :uri
