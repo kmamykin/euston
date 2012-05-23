@@ -93,11 +93,13 @@ describe 'mongo event store - snapshots', :golf, :mongo do
     before do
       event_store.put_commit oldest_commit
       event_store.put_commit next_oldest_commit
-      sleep 0.25
+
+      sleep 0.5
+
       event_store.put_snapshot snapshot
       event_store.put_commit newest_commit
 
-      sleep 0.25
+      sleep 0.5
     end
 
     describe 'within threshold' do
