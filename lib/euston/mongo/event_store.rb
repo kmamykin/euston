@@ -33,15 +33,21 @@ class EventStore
 
   def find_commits options = {}
     ErrorHandler.wrap do
-      if options.keys.empty?
-        query = {}
-        order = [ 'headers.timestamp.as_float', @ascending ]
-      else
-        options = { min_sequence: 0, max_sequence: FIXNUM_MAX }.merge options
+      options = {
+        min_sequence: 0,
+        max_sequence: FIXNUM_MAX,
+        min_timestamp: 0,
+        max_timestamp: FIXNUM_MAX
+      }.merge options
 
-        query = {
-          '_id.event_source_id' => options[:event_source_id],
-          '$or' => [{
+      order = if options.has_key? :event_source_id
+        [ '_id.sequence', @ascending ]
+      else
+        [ 'headers.timestamp.as_float', @ascending ]
+      end
+
+      query = {
+        '$or' => [{
             'body.events.headers.sequence' => {
               '$gte' => options[:min_sequence],
               '$lte' => options[:max_sequence] },
@@ -49,10 +55,16 @@ class EventStore
             '_id.sequence' => {
               '$gte' => options[:min_sequence],
               '$lte' => options[:max_sequence] }
-          }]
-        }
+        }],
 
-        order = [ '_id.sequence', @ascending ]
+        'headers.timestamp.as_float' => {
+          '$gte' => options[:min_timestamp],
+          '$lte' => options[:max_timestamp]
+        }
+      }
+
+      if options.has_key? :event_source_id
+        query['_id.event_source_id'] = options[:event_source_id]
       end
 
       map_over @commits.find(query, sort: order).to_a, :get_commit_from_document
