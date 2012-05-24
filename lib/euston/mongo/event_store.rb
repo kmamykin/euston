@@ -40,6 +40,10 @@ class EventStore
         max_timestamp: FIXNUM_MAX
       }.merge options
 
+      [:min_timestamp, :max_timestamp].each do |sym|
+        options[sym] = options[sym].to_f unless options[sym].is_a? Float
+      end
+
       order = if options.has_key? :event_source_id
         [ '_id.sequence', @ascending ]
       else
