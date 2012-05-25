@@ -21,6 +21,8 @@ module Euston
       @sequence           = options[:sequence]
       @timestamp          = options[:timestamp]
       @type               = options[:type]
+
+      @origin[:headers].delete :origin unless @origin.nil?
     end
 
     def store_command command
