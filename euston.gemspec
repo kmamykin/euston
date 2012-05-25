@@ -42,11 +42,11 @@ Gem::Specification.new do |s|
     lib/euston/null_logger.rb
     lib/euston/pluck.rb
     lib/euston/snapshot.rb
+    lib/euston/specs/event_handler_spec.rb
+    lib/euston/specs/event_source_spec.rb
+    lib/euston/specs/have_produced_matcher.rb
     lib/euston/uuid.rb
     lib/euston/version.rb
-    lib/specs/event_handler_spec.rb
-    lib/specs/event_source_spec.rb
-    lib/specs/have_produced_matcher.rb
     spec/command_handler_spec.rb
     spec/command_spec.rb
     spec/constant_loader_spec.rb
