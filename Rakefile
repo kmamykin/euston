@@ -65,11 +65,17 @@ end
 #
 #############################################################################
 
-default_rspec_opts = %w[--colour --format Fuubar --tty -r ./spec/spec_helper.rb]
+default_rspec_opts = '-r ./spec/spec_helper.rb'
 
 desc "Run all examples"
 RSpec::Core::RakeTask.new(:spec) do |t|
+  t.rspec_opts = "--colour --format Fuubar --tty #{default_rspec_opts}"
+end
+
+desc "Run all examples via jenkins"
+RSpec::Core::RakeTask.new(:jenkins_spec) do |t|
   t.rspec_opts = default_rspec_opts
+  t.rspec_path = 'b/rspec'
 end
 
 #############################################################################
