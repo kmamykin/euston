@@ -76,6 +76,6 @@ Gem::Specification.new do |s|
     s.add_development_dependency 'growl',       '~> 1.0.3'
   else
     s.add_development_dependency 'rb-inotify',  '~> 0.8.8'
-    s.add_development_dependency 'libnotify'    '~> 0.7.2'
+    s.add_development_dependency 'libnotify',   '~> 0.7.2'
   end
 end
