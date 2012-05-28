@@ -88,6 +88,16 @@ class EventStore
     end
   end
 
+  def find_snapshottable_stream snapshotter_id
+    ErrorHandler.wrap do
+      query = { snapshotter_id: snapshotter_id }
+
+      stream = @streams.find_one(query)
+      stream = get_stream_from_document stream unless stream.nil?
+      stream
+    end
+  end
+
   def find_snapshots event_source_id
     ErrorHandler.wrap do
       query = { '_id.event_source_id' => event_source_id }
@@ -183,6 +193,32 @@ class EventStore
     end
   end
 
+  def take_ownership_of_snapshottable_stream max_threshold, snapshotter_id
+    ErrorHandler.wrap do
+      new_streams_eligible_for_snapshotting = {
+        unsnapshotted: { '$gte' => max_threshold },
+        snapshotter_id: nil }
+
+      streams_stuck_in_other_components = {
+        unsnapshotted: { '$gte' => max_threshold },
+        snapshotter_id: { '$ne' => nil },
+        'snapshotting_at.as_float' => { '$lt' => Time.now.to_f - 30 } }
+
+      query = { '$or' => [
+        new_streams_eligible_for_snapshotting,
+        streams_stuck_in_other_components ] }
+
+      modifiers = {
+        '$set' => {
+          snapshotter_id: snapshotter_id,
+          snapshotting_at: {
+            as_float: Time.now.to_f,
+            as_rfc3339: Time.now.to_datetime.rfc3339(6) } } }
+
+      @streams.update query, modifiers, multi: false
+    end
+  end
+
   def take_ownership_of_undispatched_commits dispatcher_id
     ErrorHandler.wrap do
       new_commits_eligible_for_dispatch  = {
@@ -257,8 +293,13 @@ class EventStore
         'sequence'         => snapshot.sequence
       },
       'headers' => {
-        'type'                    => snapshot.type,
-        'version'                 => snapshot.version
+        'type'        => snapshot.type,
+        'version'     => snapshot.version,
+        'duration'    => snapshot.duration,
+        'timestamp'   => {
+          'as_float'    => snapshot.timestamp.to_f,
+          'as_rfc3339'  => snapshot.timestamp.to_datetime.rfc3339(6)
+        }
       },
       'body' => snapshot.body
     }
@@ -294,8 +335,10 @@ class EventStore
     id = { '_id' => snapshot.event_source_id }
     stream_commit_sequence = @streams.find_one(id)['commit_sequence']
 
-    modifiers = { '$set' => { 'snapshot_sequence' => snapshot.sequence,
-                              'unsnapshotted'     => stream_commit_sequence - snapshot.sequence } }
+    modifiers = { '$set'   => { 'snapshot_sequence' => snapshot.sequence,
+                                'unsnapshotted'     => stream_commit_sequence - snapshot.sequence },
+                  '$unset' => { 'snapshotter_id'    => 1,
+                                'snapshotting_at'   => 1 } }
 
     @streams.update id, modifiers
   end
