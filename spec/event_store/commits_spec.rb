@@ -186,4 +186,21 @@ describe 'mongo event store - commits', :golf, :mongo do
       end
     end
   end
+
+  context 'given an event store that contains a lot of commits for a single event source' do
+    let(:event_source_id) { Uuid.generate }
+
+    before do
+      large_body = { values: Array.new(100) { Uuid.generate } }
+
+      101.times do |i|
+        commit = Factory.build :commit, event_source_id: event_source_id, sequence: i
+        event_store.put_commit commit
+      end
+    end
+
+    subject { event_store.get_history event_source_id }
+
+    its(:commits) { should have(101).items }
+  end
 end
