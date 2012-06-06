@@ -71,7 +71,7 @@ class EventStore
         query['_id.event_source_id'] = options[:event_source_id]
       end
 
-      map_over @commits.find(query, sort: order, batch_size: 0).to_a, :get_commit_from_document
+      map_over @commits.find(query, sort: order, batch_size: 100).to_a, :get_commit_from_document
     end
   end
 
