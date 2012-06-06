@@ -28,7 +28,7 @@ class MessageBus
     start_time = Time.now.to_f
     history = @event_store.get_history(event_source_id) || EventSourceHistory.new(id: event_source_id)
 
-    @log.debug "Rebuilding #{history.type} with id #{history.id} and sequence #{history.sequence} from: #{history.commits.count} commit(s), #{history.snapshot.nil? ? 0 : 1} snapshot(s)" if @log.debug?
+    @log.debug "Rebuilding #{history.type.nil? ? handler_type : history.type} with id #{history.id} and sequence #{history.sequence} from: #{history.commits.count} commit(s), #{history.snapshot.nil? ? 0 : 1} snapshot(s)" if @log.debug?
 
     handler_type.new(@message_class_finder, history).when(:commit_created) do |commit|
       commit.duration = Time.now.to_f - start_time
