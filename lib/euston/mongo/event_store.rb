@@ -244,6 +244,16 @@ class EventStore
 
   private
 
+  def async_job &block
+    if RUBY_PLATFORM.to_s == 'java'
+      Thread.fork do
+        yield
+      end
+    else
+      yield
+    end
+  end
+
   def get_commit_from_document document
     Commit.new id:              document['headers']['id'],
                commands:        document['body']['commands'].pluck(:symbolize_keys, true),
@@ -320,7 +330,7 @@ class EventStore
   end
 
   def increment_stream_position_after_commit event_source_id, sequence, unsnapshotted
-    Thread.fork do
+    async_job do
       id = { '_id' => event_source_id }
 
       modifiers = { '$set' => { 'commit_sequence'   => sequence },
