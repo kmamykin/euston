@@ -20,7 +20,6 @@ module MongoSpecMixin
     end
 
     after :each do
-      sleep 1   # give forked threads a chance to complete (e.g. increment_stream_position_after_commit)
       mongo_connection.close
     end
   end
