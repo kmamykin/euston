@@ -8,11 +8,11 @@ module Euston
         @euston_largest_referenced_message_positions = { command: 0, event: 0 }
       end
 
-      let(:event_source) do
+      let(:message_source) do
         sequence = 1
         commits = []
 
-        events = [@euston_event_source_history].flatten.compact.map do |event|
+        events = [@euston_message_source_history].flatten.compact.map do |event|
           event.to_hash.tap do |hash|
             hash[:headers][:sequence] = sequence
             sequence = sequence + 1
@@ -26,15 +26,15 @@ module Euston
                                         sequence: 1)
         end
 
-        history = Euston::MessageSourceHistory.new id: message_source_id, commits: commits, snapshot: snapshot, type: event_source_type
-        event_source_type.new message_class_finder, history
+        history = Euston::MessageSourceHistory.new id: message_source_id, commits: commits, snapshot: snapshot, type: message_source_type
+        message_source_type.new message_class_finder, history
       end
 
       let(:command_namespaces)          { [] }
       let(:euston_namespaces)           { Euston::Namespaces.new commands: command_namespaces, events: event_namespaces, message_handlers: message_handler_namespaces }
       let(:event_namespaces)            { [] }
       let(:message_source_id)           { Uuid.generate }
-      let(:full_message_source_id)      { Euston::MessageSourceId.new message_source_id, event_source_type }
+      let(:full_message_source_id)      { Euston::MessageSourceId.new message_source_id, message_source_type }
       let(:message_class_finder)        { Euston::MessageClassFinder.new euston_namespaces }
       let(:message_handler_namespaces)  { [] }
       let(:snapshot)                    { nil }
@@ -48,14 +48,14 @@ module Euston
 
       def run_scenario
         begin
-          event_source.when(commit_created: ->(commit)    { @euston_commit_created = commit },
-                            snapshot_taken: ->(snapshot)  { @euston_snapshot_taken = snapshot })
+          message_source.when(commit_created: ->(commit)    { @euston_commit_created = commit },
+                              snapshot_taken: ->(snapshot)  { @euston_snapshot_taken = snapshot })
 
           [@euston_incoming_messages].flatten.compact.each do |message|
-            event_source.consume message.to_hash
+            message_source.consume message.to_hash
           end
 
-          event_source.take_snapshot
+          message_source.take_snapshot if message_source.supports_snapshots?
         rescue => e
           if @expect_error
             @exception_caught = e
@@ -83,7 +83,7 @@ module Euston
       end
 
       def history &block
-        append_messages_to_array :@euston_event_source_history, &block
+        append_messages_to_array :@euston_message_source_history, &block
       end
 
       def incoming_messages &block
