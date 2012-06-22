@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'euston'
   s.version     = '2.0.0'
-  s.date        = '2012-05-25'
+  s.date        = '2012-06-22'
   s.platform    = RUBY_PLATFORM.to_s == 'java' ? 'java' : Gem::Platform::RUBY
   s.authors     = ['Lee Henson', 'Guy Boertje']
   s.email       = ['lee.m.henson@gmail.com', 'guyboertje@gmail.com']
@@ -22,19 +22,20 @@ Gem::Specification.new do |s|
     lib/euston/constants.rb
     lib/euston/errors.rb
     lib/euston/event_handler.rb
-    lib/euston/event_source.rb
-    lib/euston/event_source_history.rb
     lib/euston/global_message_handler_map.rb
     lib/euston/marshalling.rb
     lib/euston/message.rb
     lib/euston/message_class_finder.rb
     lib/euston/message_handler.rb
     lib/euston/message_handler_message_map.rb
+    lib/euston/message_source.rb
+    lib/euston/message_source_history.rb
+    lib/euston/message_source_id.rb
     lib/euston/mongo/concurrent_operation.rb
     lib/euston/mongo/config.rb
+    lib/euston/mongo/data_store.rb
     lib/euston/mongo/error_handler.rb
     lib/euston/mongo/errors.rb
-    lib/euston/mongo/event_store.rb
     lib/euston/mongo/message_bus.rb
     lib/euston/mongo/stream.rb
     lib/euston/mongo/structure_initialiser.rb
@@ -43,8 +44,8 @@ Gem::Specification.new do |s|
     lib/euston/pluck.rb
     lib/euston/snapshot.rb
     lib/euston/specs/event_handler_spec.rb
-    lib/euston/specs/event_source_spec.rb
     lib/euston/specs/have_produced_matcher.rb
+    lib/euston/specs/message_source_spec.rb
     lib/euston/uuid.rb
     lib/euston/version.rb
     spec/command_handler_spec.rb
@@ -67,6 +68,7 @@ Gem::Specification.new do |s|
     spec/factories/book_tee_command.rb
     spec/factories/check_for_slow_play_command.rb
     spec/factories/commit.rb
+    spec/factories/event_source_id.rb
     spec/factories/snapshot.rb
     spec/factories/tee_booked_event.rb
     spec/global_message_handler_map_spec.rb

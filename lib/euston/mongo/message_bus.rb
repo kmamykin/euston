@@ -2,8 +2,8 @@ module Euston
 module Mongo
 
 class MessageBus
-  def initialize message_class_finder, global_message_handler_map, event_store, logger = Euston::NullLogger.instance
-    @event_store = event_store
+  def initialize message_class_finder, global_message_handler_map, data_store, logger = Euston::NullLogger.instance
+    @data_store = data_store
     @global_message_handler_map = global_message_handler_map
     @message_class_finder = message_class_finder
     @log = logger
@@ -23,16 +23,16 @@ class MessageBus
 
   def build_event_source_handler handler_type, message, mapping
     message_source_id = MessageSourceId.new message[:body][mapping[:identifier]], handler_type
-    return nil if @event_store.already_processed_message? message_source_id, message[:headers][:id]
+    return nil if @data_store.already_processed_message? message_source_id, message[:headers][:id]
 
     start_time = Time.now.to_f
-    history = @event_store.get_history(message_source_id) || MessageSourceHistory.new(id: message_source_id.id, type: message_source_id.type)
+    history = @data_store.get_history(message_source_id) || MessageSourceHistory.new(id: message_source_id.id, type: message_source_id.type)
 
     @log.debug "Rebuilding #{history.message_source_id.type} with id #{history.message_source_id.id} and sequence #{history.sequence} from: #{history.commits.count} commit(s), #{history.snapshot.nil? ? 0 : 1} snapshot(s)" if @log.debug?
 
     handler_type.new(@message_class_finder, history).when(:commit_created) do |commit|
       commit.duration = Time.now.to_f - start_time
-      @event_store.put_commit commit
+      @data_store.put_commit commit
     end
   end
 

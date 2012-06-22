@@ -13,7 +13,7 @@ module MongoSpecMixin
       mongo_db.collections.select { |c| c.name !~ /system/ }.to_a.each { |c| mongo_db.drop_collection c.name }
     end
 
-    let(:event_store) do
+    let(:data_store) do
       Euston::Mongo::DataStore.build do |config|
         config.database = MongoSpecMixin.test_database
       end

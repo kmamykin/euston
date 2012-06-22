@@ -1,6 +1,6 @@
 describe 'mongo event store - scenario walkthrough', :golf, :mongo do
   let(:global_message_handler_map)  { Euston::GlobalMessageHandlerMap.new namespaces }
-  let(:message_bus)                 { Euston::Mongo::MessageBus.new message_class_finder, global_message_handler_map, event_store }
+  let(:message_bus)                 { Euston::Mongo::MessageBus.new message_class_finder, global_message_handler_map, data_store }
   let(:player_1)                    { Uuid.generate }
   let(:player_2)                    { Uuid.generate }
 
@@ -15,30 +15,30 @@ describe 'mongo event store - scenario walkthrough', :golf, :mongo do
 
     sleep 0.25
 
-    @stream = event_store.find_streams_to_snapshot(2).find { |stream| stream.message_source_id.id == course_id }
-    history = event_store.get_history @stream.message_source_id
+    @stream = data_store.find_streams_to_snapshot(2).find { |stream| stream.message_source_id.id == course_id }
+    history = data_store.get_history @stream.message_source_id
 
     Euston::ConstantLoader.new.when(:hit) do |klass|
       klass.new(message_class_finder, history).when(:snapshot_taken) do |snapshot|
-        event_store.put_snapshot snapshot
+        data_store.put_snapshot snapshot
       end.take_snapshot
     end.load history.message_source_id.type
   end
 
-  subject { event_store.get_snapshot @stream.message_source_id }
+  subject { data_store.get_snapshot @stream.message_source_id }
 
   its(:sequence)        { should == 2 }
   its(:version)         { should == 1 }
 
   describe 'the snashot event source id' do
-    subject { event_store.get_snapshot(@stream.message_source_id).message_source_id }
+    subject { data_store.get_snapshot(@stream.message_source_id).message_source_id }
 
     its(:id)    { should == course_id }
     its(:type)  { should == namespace::Secretary.to_s }
   end
 
   describe 'the snapshot body' do
-    subject { event_store.get_snapshot(@stream.message_source_id).body }
+    subject { data_store.get_snapshot(@stream.message_source_id).body }
 
     its([:players_with_warnings]) { should satisfy { |p| p[player_1.to_sym] == :slow_play }}
     its([:players_with_warnings]) { should satisfy { |p| p[player_2.to_sym] == :slow_play }}

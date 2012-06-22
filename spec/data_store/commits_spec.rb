@@ -1,5 +1,5 @@
 describe 'mongo event store - commits', :golf, :mongo do
-  let(:saved_commits) { event_store.find_commits }
+  let(:saved_commits) { data_store.find_commits }
 
   context 'given an empty event store' do
     context 'when the user attempts to find all commits' do
@@ -10,7 +10,7 @@ describe 'mongo event store - commits', :golf, :mongo do
     context 'when the user saves a commit' do
       let(:commit) { Factory.build :commit }
 
-      before  { event_store.put_commit commit }
+      before  { data_store.put_commit commit }
       subject { saved_commits }
       it      { should have(1).item }
 
@@ -71,9 +71,9 @@ describe 'mongo event store - commits', :golf, :mongo do
 
       context 'and the user looks for undispatched commits' do
         let(:dispatcher_id)         { Uuid.generate }
-        let(:undispatched_commits)  { event_store.find_dispatchable_commits dispatcher_id }
+        let(:undispatched_commits)  { data_store.find_dispatchable_commits dispatcher_id }
 
-        before  { event_store.take_ownership_of_undispatched_commits dispatcher_id }
+        before  { data_store.take_ownership_of_undispatched_commits dispatcher_id }
         subject { undispatched_commits }
         it      { should have(1).item }
 
@@ -83,14 +83,14 @@ describe 'mongo event store - commits', :golf, :mongo do
         end
 
         context 'and the user marks the commit as dispatched' do
-          before  { event_store.mark_commits_as_dispatched undispatched_commits }
-          subject { event_store.find_dispatchable_commits dispatcher_id }
+          before  { data_store.mark_commits_as_dispatched undispatched_commits }
+          subject { data_store.find_dispatchable_commits dispatcher_id }
           it      { should have(0).items }
         end
       end
 
       context 'and the user looks for snapshottable streams' do
-        let(:snapshottable_streams) { event_store.find_streams_to_snapshot 1 }
+        let(:snapshottable_streams) { data_store.find_streams_to_snapshot 1 }
         before  { sleep 0.5 }   # stream document update occurs asynchronously
         subject { snapshottable_streams }
         it      { should have(1).item }
@@ -101,7 +101,7 @@ describe 'mongo event store - commits', :golf, :mongo do
 
         before do
           begin
-            event_store.put_commit saved_commits.first
+            data_store.put_commit saved_commits.first
           rescue => e
             exceptions << e
           end
@@ -117,10 +117,10 @@ describe 'mongo event store - commits', :golf, :mongo do
       let(:exceptions)  { [] }
 
       before do
-        event_store.put_commit commit
+        data_store.put_commit commit
 
         begin
-          event_store.put_commit commit
+          data_store.put_commit commit
         rescue => e
           exceptions << e
         end
@@ -142,16 +142,16 @@ describe 'mongo event store - commits', :golf, :mongo do
     let(:commit_1_4) { Factory.build :commit, message_source_id: message_source_id1, sequence: 4 }
 
     before do
-      event_store.put_commit commit_1_1
-      event_store.put_commit commit_1_2
-      event_store.put_commit commit_2_1
-      event_store.put_commit commit_1_3
-      event_store.put_commit commit_2_2
-      event_store.put_commit commit_1_4
+      data_store.put_commit commit_1_1
+      data_store.put_commit commit_1_2
+      data_store.put_commit commit_2_1
+      data_store.put_commit commit_1_3
+      data_store.put_commit commit_2_2
+      data_store.put_commit commit_1_4
     end
 
     context 'when the user requests all the commits for a particular event source' do
-      let(:commits_for_event_source_2) { event_store.find_commits message_source_id: message_source_id2 }
+      let(:commits_for_event_source_2) { data_store.find_commits message_source_id: message_source_id2 }
 
       subject { commits_for_event_source_2 }
       it      { should have(2).items }
@@ -169,7 +169,7 @@ describe 'mongo event store - commits', :golf, :mongo do
 
     context 'when the user requests a range of commits for a particular event source' do
       let(:commits_for_event_source_1) do
-        event_store.find_commits message_source_id: message_source_id1, min_sequence: 2, max_sequence: 3
+        data_store.find_commits message_source_id: message_source_id1, min_sequence: 2, max_sequence: 3
       end
 
       subject { commits_for_event_source_1 }
@@ -195,11 +195,11 @@ describe 'mongo event store - commits', :golf, :mongo do
 
       101.times do |i|
         commit = Factory.build :commit, message_source_id: message_source_id, sequence: i
-        event_store.put_commit commit
+        data_store.put_commit commit
       end
     end
 
-    subject { event_store.get_history message_source_id }
+    subject { data_store.get_history message_source_id }
 
     its(:commits) { should have(101).items }
   end
