@@ -1,7 +1,7 @@
 describe 'event source command publishing', :golf do
   context 'when the command being published is valid' do
     let(:history) do
-      commit = Euston::Commit.new event_source_id: new_starter_event_source_history.event_source_id,
+      commit = Euston::Commit.new message_source_id: new_starter_event_source_history.message_source_id,
                                   events: [
         namespace::TeeBooked.v(1).new({ sequence: 1 }, course_id: course_id, player_id: player_id, time: time).to_hash
       ]

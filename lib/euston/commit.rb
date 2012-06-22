@@ -14,7 +14,7 @@ module Euston
 
       @commands           = options[:commands]
       @duration           = options[:duration]
-      @event_source_id    = options[:event_source_id]
+      @message_source_id    = options[:message_source_id]
       @events             = options[:events]
       @id                 = options[:id]
       @origin             = options[:origin]
@@ -32,7 +32,7 @@ module Euston
       @events << marshal_dup(event.to_hash).tap { |e| e[:headers][:sequence] = @sequence + @events.length }
     end
 
-    attr_reader :commands, :event_source_id, :events, :id, :origin, :sequence, :timestamp
+    attr_reader :commands, :message_source_id, :events, :id, :origin, :sequence, :timestamp
     attr_accessor :duration
 
     def empty?

@@ -28,18 +28,18 @@ module Euston
       end
 
       @type = opts[:type].to_s unless opts[:type].nil?
-      @type = @snapshot.event_source_id.type unless @snapshot.nil?
-      @type = @commits.last.event_source_id.type unless @commits.empty?
+      @type = @snapshot.message_source_id.type unless @snapshot.nil?
+      @type = @commits.last.message_source_id.type unless @commits.empty?
 
       raise 'You must pass a :type when creating an MessageSourceHistory without any snapshots or commits' if @type.nil?
 
-      @event_source_id = MessageSourceId.new @id, @type
+      @message_source_id = MessageSourceId.new @id, @type
     end
 
     def next_sequence
       @sequence + 1
     end
 
-    attr_reader :commits, :event_source_id, :sequence, :snapshot
+    attr_reader :commits, :message_source_id, :sequence, :snapshot
   end
 end

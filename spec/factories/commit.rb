@@ -2,7 +2,7 @@ class Cranky::Factory
   def commit
     c = define  class: Hash,
                 id: Uuid.generate,
-                event_source_id: Factory.build(:event_source_id),
+                message_source_id: Factory.build(:message_source_id),
                 sequence: 1,
                 origin: Factory.build(:book_tee_command).to_hash
 

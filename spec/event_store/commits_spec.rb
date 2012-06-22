@@ -17,8 +17,8 @@ describe 'mongo event store - commits', :golf, :mongo do
       describe 'the saved commit' do
         subject { saved_commits.first }
 
-        its('event_source_id.id')   { should == commit.event_source_id.id }
-        its('event_source_id.type') { should == commit.event_source_id.type }
+        its('message_source_id.id')   { should == commit.message_source_id.id }
+        its('message_source_id.type') { should == commit.message_source_id.type }
         its('sequence')             { should == 1 }
         its('timestamp.to_f')       { should == commit.timestamp.to_f }
 
@@ -132,14 +132,14 @@ describe 'mongo event store - commits', :golf, :mongo do
   end
 
   context 'given an event store that contains several commits' do
-    let(:event_source_id1)  { Factory.build(:event_source_id) }
-    let(:event_source_id2)  { Factory.build(:event_source_id) }
-    let(:commit_1_1) { Factory.build :commit, event_source_id: event_source_id1, sequence: 1 }
-    let(:commit_1_2) { Factory.build :commit, event_source_id: event_source_id1, sequence: 2 }
-    let(:commit_2_1) { Factory.build :commit, event_source_id: event_source_id2, sequence: 1 }
-    let(:commit_1_3) { Factory.build :commit, event_source_id: event_source_id1, sequence: 3 }
-    let(:commit_2_2) { Factory.build :commit, event_source_id: event_source_id2, sequence: 2 }
-    let(:commit_1_4) { Factory.build :commit, event_source_id: event_source_id1, sequence: 4 }
+    let(:message_source_id1)  { Factory.build(:message_source_id) }
+    let(:message_source_id2)  { Factory.build(:message_source_id) }
+    let(:commit_1_1) { Factory.build :commit, message_source_id: message_source_id1, sequence: 1 }
+    let(:commit_1_2) { Factory.build :commit, message_source_id: message_source_id1, sequence: 2 }
+    let(:commit_2_1) { Factory.build :commit, message_source_id: message_source_id2, sequence: 1 }
+    let(:commit_1_3) { Factory.build :commit, message_source_id: message_source_id1, sequence: 3 }
+    let(:commit_2_2) { Factory.build :commit, message_source_id: message_source_id2, sequence: 2 }
+    let(:commit_1_4) { Factory.build :commit, message_source_id: message_source_id1, sequence: 4 }
 
     before do
       event_store.put_commit commit_1_1
@@ -151,7 +151,7 @@ describe 'mongo event store - commits', :golf, :mongo do
     end
 
     context 'when the user requests all the commits for a particular event source' do
-      let(:commits_for_event_source_2) { event_store.find_commits event_source_id: event_source_id2 }
+      let(:commits_for_event_source_2) { event_store.find_commits message_source_id: message_source_id2 }
 
       subject { commits_for_event_source_2 }
       it      { should have(2).items }
@@ -169,7 +169,7 @@ describe 'mongo event store - commits', :golf, :mongo do
 
     context 'when the user requests a range of commits for a particular event source' do
       let(:commits_for_event_source_1) do
-        event_store.find_commits event_source_id: event_source_id1, min_sequence: 2, max_sequence: 3
+        event_store.find_commits message_source_id: message_source_id1, min_sequence: 2, max_sequence: 3
       end
 
       subject { commits_for_event_source_1 }
@@ -188,18 +188,18 @@ describe 'mongo event store - commits', :golf, :mongo do
   end
 
   context 'given an event store that contains a lot of commits for a single event source' do
-    let(:event_source_id) { Factory.build(:event_source_id) }
+    let(:message_source_id) { Factory.build(:message_source_id) }
 
     before do
       large_body = { values: Array.new(100) { Uuid.generate } }
 
       101.times do |i|
-        commit = Factory.build :commit, event_source_id: event_source_id, sequence: i
+        commit = Factory.build :commit, message_source_id: message_source_id, sequence: i
         event_store.put_commit commit
       end
     end
 
-    subject { event_store.get_history event_source_id }
+    subject { event_store.get_history message_source_id }
 
     its(:commits) { should have(101).items }
   end

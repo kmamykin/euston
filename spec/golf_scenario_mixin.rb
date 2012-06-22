@@ -3,7 +3,7 @@ module GolfScenarioMixin
 
   included do
     let(:course_id)                 { Uuid.generate }
-    let(:event_source_id)           { course_id }
+    let(:message_source_id)           { course_id }
     let(:message_class_finder)      { Euston::MessageClassFinder.new namespaces }
     let(:namespace)                 { Scenarios::GolfCourse }
     let(:namespaces)                { Euston::Namespaces.new message_handlers: namespace, commands: namespace, events: namespace }
@@ -14,7 +14,7 @@ module GolfScenarioMixin
       Euston::MessageSourceHistory.new id: course_id, type: type
     end
 
-    def new_event_source_id type
+    def new_message_source_id type
       Euston::MessageSourceId.new course_id, type
     end
 
@@ -22,24 +22,24 @@ module GolfScenarioMixin
       new_event_source_history namespace::Scorer
     end
 
-    def new_scorer_event_source_id
-      new_event_source_id namespace::Scorer
+    def new_scorer_message_source_id
+      new_message_source_id namespace::Scorer
     end
 
     def new_secretary_event_source_history
       new_event_source_history namespace::Secretary
     end
 
-    def new_secretary_event_source_id
-      new_event_source_id namespace::Secretary
+    def new_secretary_message_source_id
+      new_message_source_id namespace::Secretary
     end
 
     def new_starter_event_source_history
       new_event_source_history namespace::Starter
     end
 
-    def new_starter_event_source_id
-      new_event_source_id namespace::Starter
+    def new_starter_message_source_id
+      new_message_source_id namespace::Starter
     end
 
     def scorer history = nil

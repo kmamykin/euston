@@ -8,7 +8,7 @@ describe 'event source hydration', :golf do
       let(:course_record) { 60 + rand(10) }
 
       let(:history) do
-        commit = Euston::Commit.new event_source_id: new_scorer_event_source_id,
+        commit = Euston::Commit.new message_source_id: new_scorer_message_source_id,
                                     events: [
           namespace::CourseRecordBroken.v(1).new(course_id: course_id, player_id: player_id, score: course_record).to_hash
         ]
@@ -25,13 +25,13 @@ describe 'event source hydration', :golf do
       let(:exceptions)  { [] }
 
       let(:history) do
-        commit = Euston::Commit.new event_source_id: new_scorer_event_source_id,
+        commit = Euston::Commit.new message_source_id: new_scorer_message_source_id,
                                     sequence: 2,
                                     events: [
           namespace::CourseRecordBroken.v(1).new(course_id: course_id, player_id: player_id, score: rand(70)).to_hash
         ]
 
-        snapshot = Euston::Snapshot.new event_source_id: commit.event_source_id,
+        snapshot = Euston::Snapshot.new message_source_id: commit.message_source_id,
                                         sequence: 1
 
         Euston::MessageSourceHistory.new id: course_id, commits: [ commit ], sequence: 2, snapshot: snapshot
@@ -58,7 +58,7 @@ describe 'event source hydration', :golf do
       end
 
       let(:snapshot) do
-        Euston::Snapshot.new event_source_id: new_secretary_event_source_id,
+        Euston::Snapshot.new message_source_id: new_secretary_message_source_id,
                              sequence: 1,
                              body: { players_with_warnings: { player_1: :foul_language } }
       end
@@ -74,13 +74,13 @@ describe 'event source hydration', :golf do
 
     describe 'when the event source is loaded from a snapshot and an commit' do
       let(:snapshot) do
-        Euston::Snapshot.new event_source_id: new_secretary_event_source_id,
+        Euston::Snapshot.new message_source_id: new_secretary_message_source_id,
                              sequence: 1,
                              body: { players_with_warnings: { player_1: :foul_language } }
       end
 
       let(:history) do
-        commit = Euston::Commit.new event_source_id: snapshot.event_source_id, sequence: 2, events: [
+        commit = Euston::Commit.new message_source_id: snapshot.message_source_id, sequence: 2, events: [
           namespace::WarningIssuedForSlowPlay.v(1).new(player_id: player_id).to_hash
         ]
 

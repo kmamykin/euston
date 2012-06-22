@@ -11,7 +11,7 @@ describe 'event source historical versioning', :golf do
 
   context 'an event source that has already generated 1 commit receives another command' do
     let(:history) do
-      commit = Euston::Commit.new event_source_id: new_starter_event_source_history.event_source_id, events: [
+      commit = Euston::Commit.new message_source_id: new_starter_event_source_history.message_source_id, events: [
         namespace::TeeBooked.v(1).new({ sequence: 1 }, course_id: course_id, player_id: player_id, time: time).to_hash
       ]
 

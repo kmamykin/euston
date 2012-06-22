@@ -1,7 +1,7 @@
 class Cranky::Factory
   def snapshot
     s = define  class: Hash,
-                event_source_id: Factory.build(:event_source_id),
+                message_source_id: Factory.build(:message_source_id),
                 sequence: 1,
                 version: 1,
                 idempotence_message_ids: Array.new(rand(10) + 1) { Uuid.generate },

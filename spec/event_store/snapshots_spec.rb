@@ -1,8 +1,8 @@
 describe 'mongo event store - snapshots', :golf, :mongo do
   context 'when a user stores a snapshot' do
-    let(:commit)              { Factory.build :commit, event_source_id: snapshot.event_source_id }
+    let(:commit)              { Factory.build :commit, message_source_id: snapshot.message_source_id }
     let(:snapshot)            { Factory.build :snapshot }
-    let(:retrieved_snapshot)  { event_store.get_snapshot snapshot.event_source_id, snapshot.sequence }
+    let(:retrieved_snapshot)  { event_store.get_snapshot snapshot.message_source_id, snapshot.sequence }
 
     before do
       event_store.put_commit commit
@@ -13,9 +13,9 @@ describe 'mongo event store - snapshots', :golf, :mongo do
     subject { retrieved_snapshot }
 
     describe 'the snapshot event source id' do
-      subject     { retrieved_snapshot.event_source_id }
-      its(:id)    { should == snapshot.event_source_id.id }
-      its(:type)  { should == snapshot.event_source_id.type }
+      subject     { retrieved_snapshot.message_source_id }
+      its(:id)    { should == snapshot.message_source_id.id }
+      its(:type)  { should == snapshot.message_source_id.type }
     end
 
     its(:sequence)                { should == snapshot.sequence }
@@ -29,17 +29,17 @@ describe 'mongo event store - snapshots', :golf, :mongo do
   end
 
   context 'when a user retrieves a snapshot using a particular sequence number' do
-    let(:event_source_id)   { Factory.build :event_source_id }
+    let(:message_source_id)   { Factory.build :message_source_id }
 
-    let(:too_old_snapshot)  { Factory.build :snapshot, event_source_id: event_source_id, sequence: 1 }
-    let(:correct_snapshot)  { Factory.build :snapshot, event_source_id: event_source_id, sequence: 3, body: { val: rand(1000) } }
-    let(:too_new_snapshot)  { Factory.build :snapshot, event_source_id: event_source_id, sequence: 5 }
+    let(:too_old_snapshot)  { Factory.build :snapshot, message_source_id: message_source_id, sequence: 1 }
+    let(:correct_snapshot)  { Factory.build :snapshot, message_source_id: message_source_id, sequence: 3, body: { val: rand(1000) } }
+    let(:too_new_snapshot)  { Factory.build :snapshot, message_source_id: message_source_id, sequence: 5 }
 
-    let(:commit_1)          { Factory.build :commit, event_source_id: event_source_id, sequence: 1 }
-    let(:commit_2)          { Factory.build :commit, event_source_id: event_source_id, sequence: 3 }
-    let(:commit_3)          { Factory.build :commit, event_source_id: event_source_id, sequence: 5 }
+    let(:commit_1)          { Factory.build :commit, message_source_id: message_source_id, sequence: 1 }
+    let(:commit_2)          { Factory.build :commit, message_source_id: message_source_id, sequence: 3 }
+    let(:commit_3)          { Factory.build :commit, message_source_id: message_source_id, sequence: 5 }
 
-    let(:retrieved_snapshot) { event_store.get_snapshot event_source_id, too_new_snapshot.sequence - 1 }
+    let(:retrieved_snapshot) { event_store.get_snapshot message_source_id, too_new_snapshot.sequence - 1 }
 
     before do
       event_store.put_commit commit_1
@@ -64,11 +64,11 @@ describe 'mongo event store - snapshots', :golf, :mongo do
   end
 
   context 'when a snapshot has been added to the most recent commit of a stream' do
-    let(:event_source_id)     { Factory.build :event_source_id }
-    let(:oldest_commit)       { Factory.build :commit, event_source_id: event_source_id, sequence: 1 }
-    let(:next_oldest_commit)  { Factory.build :commit, event_source_id: event_source_id, sequence: 3 }
-    let(:newest_commit)       { Factory.build :commit, event_source_id: event_source_id, sequence: 5 }
-    let(:snapshot)            { Factory.build :snapshot, event_source_id: event_source_id, sequence: 5, body: { val: rand(1000) } }
+    let(:message_source_id)     { Factory.build :message_source_id }
+    let(:oldest_commit)       { Factory.build :commit, message_source_id: message_source_id, sequence: 1 }
+    let(:next_oldest_commit)  { Factory.build :commit, message_source_id: message_source_id, sequence: 3 }
+    let(:newest_commit)       { Factory.build :commit, message_source_id: message_source_id, sequence: 5 }
+    let(:snapshot)            { Factory.build :snapshot, message_source_id: message_source_id, sequence: 5, body: { val: rand(1000) } }
 
     before do
       event_store.put_commit oldest_commit
@@ -86,14 +86,14 @@ describe 'mongo event store - snapshots', :golf, :mongo do
   end
 
   context 'when a user adds a commit after a snapshot' do
-    let(:event_source_id)     { Factory.build :event_source_id }
+    let(:message_source_id)     { Factory.build :message_source_id }
     let(:within_threshold)    { 2 }
     let(:over_threshold)      { 3 }
     let(:snapshot_data)       { { val: rand(1000) } }
-    let(:oldest_commit)       { Factory.build :commit, event_source_id: event_source_id, sequence: 1 }
-    let(:next_oldest_commit)  { Factory.build :commit, event_source_id: event_source_id, sequence: 3 }
-    let(:newest_commit)       { Factory.build :commit, event_source_id: event_source_id, sequence: 5 }
-    let(:snapshot)            { Factory.build :snapshot, event_source_id: event_source_id, sequence: 3, body: { val: rand(1000) } }
+    let(:oldest_commit)       { Factory.build :commit, message_source_id: message_source_id, sequence: 1 }
+    let(:next_oldest_commit)  { Factory.build :commit, message_source_id: message_source_id, sequence: 3 }
+    let(:newest_commit)       { Factory.build :commit, message_source_id: message_source_id, sequence: 5 }
+    let(:snapshot)            { Factory.build :snapshot, message_source_id: message_source_id, sequence: 3, body: { val: rand(1000) } }
 
     before do
       event_store.put_commit oldest_commit
