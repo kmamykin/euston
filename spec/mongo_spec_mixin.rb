@@ -14,7 +14,7 @@ module MongoSpecMixin
     end
 
     let(:event_store) do
-      Euston::Mongo::EventStore.build do |config|
+      Euston::Mongo::DataStore.build do |config|
         config.database = MongoSpecMixin.test_database
       end
     end

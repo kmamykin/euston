@@ -1,7 +1,7 @@
 module Euston
 module Mongo
 
-class EventStore
+class DataStore
   def self.build &block
     config = Config.new
 
@@ -11,7 +11,7 @@ class EventStore
     options.merge!(:logger => config.logger) unless config.logger.nil?
 
     connection = ::Mongo::Connection.from_uri config.uri, options
-    EventStore.new connection.db config.database
+    DataStore.new connection.db config.database
   end
 
   def initialize database
