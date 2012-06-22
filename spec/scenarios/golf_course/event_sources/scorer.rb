@@ -2,7 +2,7 @@ module Scenarios
 module GolfCourse
 
 class Scorer
-  include Euston::EventSource
+  include Euston::MessageSource
 
   initialization do
     @rounds = []

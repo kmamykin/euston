@@ -6,7 +6,7 @@ describe 'event source command publishing', :golf do
         namespace::TeeBooked.v(1).new({ sequence: 1 }, course_id: course_id, player_id: player_id, time: time).to_hash
       ]
 
-      Euston::EventSourceHistory.new id: course_id, commits: [ commit ]
+      Euston::MessageSourceHistory.new id: course_id, commits: [ commit ]
     end
 
     let(:command) { namespace::StartGroup.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }
@@ -34,8 +34,8 @@ describe 'event source command publishing', :golf do
   end
 
   context 'when the command being published is invalid' do
-    class Scenarios::GolfCourse::EventSourceWhichPublishesInvalidCommands
-      include Euston::EventSource
+    class Scenarios::GolfCourse::MessageSourceWhichPublishesInvalidCommands
+      include Euston::MessageSource
 
       events
 
@@ -45,7 +45,7 @@ describe 'event source command publishing', :golf do
     end
 
     let(:buggy_event_source) do
-      type = namespace::EventSourceWhichPublishesInvalidCommands
+      type = namespace::MessageSourceWhichPublishesInvalidCommands
       type.new(message_class_finder, new_event_source_history(type)).when(:commit_created) do |commit|
         @commit = commit
       end

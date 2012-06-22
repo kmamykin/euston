@@ -2,7 +2,7 @@ module Scenarios
 module GolfCourse
 
 class Secretary
-  include Euston::EventSource
+  include Euston::MessageSource
 
   initialization do
     @players_with_warnings = {}

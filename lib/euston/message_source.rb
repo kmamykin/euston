@@ -1,5 +1,5 @@
 module Euston
-  module EventSource
+  module MessageSource
     extend ActiveSupport::Concern
     include Hollywood
     include CommandHandler
@@ -7,7 +7,7 @@ module Euston
 
     included do
       def initialize message_class_finder, history = nil
-        @event_source_history = history || EventSourceHistory.empty(self.class)
+        @event_source_history = history || MessageSourceHistory.empty(self.class)
         @message_class_finder = message_class_finder
         initialization if self.class.message_map.has_initializer?
         restore_state_from_history

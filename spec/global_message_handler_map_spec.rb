@@ -1,8 +1,8 @@
 describe 'global message handler map' do
   context 'with an event source containing an unverifiable command' do
     module GMM2
-      class EventSourceWithUnverifiableCommand
-        include Euston::EventSource
+      class MessageSourceWithUnverifiableCommand
+        include Euston::MessageSource
 
         commands
 
@@ -17,7 +17,7 @@ describe 'global message handler map' do
     before do
       begin
         map.inspect_message_handlers
-      rescue Euston::UnverifiableEventSource => e
+      rescue Euston::UnverifiableMessageSource => e
         exceptions << e
       end
     end
@@ -30,8 +30,8 @@ describe 'global message handler map' do
 
   context 'with an event source containing a verifiable command and an unverifiable command' do
     module GMM3
-      class EventSourceWithUnverifiableCommand
-        include Euston::EventSource
+      class MessageSourceWithUnverifiableCommand
+        include Euston::MessageSource
 
         commands
 
@@ -55,7 +55,7 @@ describe 'global message handler map' do
     before do
       begin
         map.inspect_message_handlers
-      rescue Euston::UnverifiableEventSource => e
+      rescue Euston::UnverifiableMessageSource => e
         exceptions << e
       end
     end
@@ -68,8 +68,8 @@ describe 'global message handler map' do
 
   context 'with an event source containing an unverifiable event' do
     module GMM4
-      class EventSourceWithUnverifiableEvent
-        include Euston::EventSource
+      class MessageSourceWithUnverifiableEvent
+        include Euston::MessageSource
 
         events
 
@@ -84,7 +84,7 @@ describe 'global message handler map' do
     before do
       begin
         map.inspect_message_handlers
-      rescue Euston::UnverifiableEventSource => e
+      rescue Euston::UnverifiableMessageSource => e
         exceptions << e
       end
     end
@@ -97,8 +97,8 @@ describe 'global message handler map' do
 
   context 'with an event source containing a verifiable event and an unverifiable event' do
     module GMM5
-      class EventSourceWithUnverifiableEvent
-        include Euston::EventSource
+      class MessageSourceWithUnverifiableEvent
+        include Euston::MessageSource
 
         events
 
@@ -122,7 +122,7 @@ describe 'global message handler map' do
     before do
       begin
         map.inspect_message_handlers
-      rescue Euston::UnverifiableEventSource => e
+      rescue Euston::UnverifiableMessageSource => e
         exceptions << e
       end
     end
@@ -135,8 +135,8 @@ describe 'global message handler map' do
 
   context 'with an event source containing an unverifiable transition' do
     module GMM6
-      class EventSourceWithUnverifiableTransition
-        include Euston::EventSource
+      class MessageSourceWithUnverifiableTransition
+        include Euston::MessageSource
 
         transitions
 
@@ -151,7 +151,7 @@ describe 'global message handler map' do
     before do
       begin
         map.inspect_message_handlers
-      rescue Euston::UnverifiableEventSource => e
+      rescue Euston::UnverifiableMessageSource => e
         exceptions << e
       end
     end
@@ -164,8 +164,8 @@ describe 'global message handler map' do
 
   context 'with an event source containing a verifiable event and an unverifiable event' do
     module GMM7
-      class EventSourceWithUnverifiableTransition
-        include Euston::EventSource
+      class MessageSourceWithUnverifiableTransition
+        include Euston::MessageSource
 
         transitions
 
@@ -189,7 +189,7 @@ describe 'global message handler map' do
     before do
       begin
         map.inspect_message_handlers
-      rescue Euston::UnverifiableEventSource => e
+      rescue Euston::UnverifiableMessageSource => e
         exceptions << e
       end
     end
@@ -232,8 +232,8 @@ describe 'global message handler map' do
 
   context 'with a routable command' do
     module GMM9
-      class RoutableEventSource
-        include Euston::EventSource
+      class RoutableMessageSource
+        include Euston::MessageSource
 
         commands
 
@@ -276,7 +276,7 @@ describe 'global message handler map' do
       describe 'discovered handler' do
         subject           { discovered[0] }
         its([:category])  { should == :event_source }
-        its([:handler])   { should == GMM9::RoutableEventSource }
+        its([:handler])   { should == GMM9::RoutableMessageSource }
       end
     end
   end

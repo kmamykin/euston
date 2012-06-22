@@ -2,7 +2,7 @@ describe 'event source event subscription' do
   context 'with a valid event source definition' do
     context 'a single event subscription is defined' do
       class ESED1
-        include Euston::EventSource
+        include Euston::MessageSource
 
         events
 
@@ -35,7 +35,7 @@ describe 'event source event subscription' do
 
     context 'a single event subscription is defined for a specific version' do
       class ESED2
-        include Euston::EventSource
+        include Euston::MessageSource
 
         events
 
@@ -69,7 +69,7 @@ describe 'event source event subscription' do
 
     context 'a single event subscription is defined for a specific version with an assigned identifier' do
       class ESED3
-        include Euston::EventSource
+        include Euston::MessageSource
 
         events
 
@@ -102,7 +102,7 @@ describe 'event source event subscription' do
 
     context 'a single event subscription is defined for with an assigned identifier' do
       class ESED4
-        include Euston::EventSource
+        include Euston::MessageSource
 
         events
 
@@ -135,7 +135,7 @@ describe 'event source event subscription' do
 
     context 'multiple event subscriptions are defined with varying settings' do
       class ESED5
-        include Euston::EventSource
+        include Euston::MessageSource
 
         events
 
@@ -216,7 +216,7 @@ describe 'event source event subscription' do
       before do
         begin
           class NaughtyED1
-            include Euston::EventSource
+            include Euston::MessageSource
 
             events
 
@@ -229,7 +229,7 @@ describe 'event source event subscription' do
       end
 
       subject { exceptions }
-      
+
       it { should_not be_empty }
     end
   end

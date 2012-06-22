@@ -11,11 +11,11 @@ module GolfScenarioMixin
     let(:time)                      { Time.now.utc + 1000 + rand(1000) }
 
     def new_event_source_history type
-      Euston::EventSourceHistory.new id: course_id, type: type
+      Euston::MessageSourceHistory.new id: course_id, type: type
     end
 
     def new_event_source_id type
-      Euston::EventSourceId.new course_id, type
+      Euston::MessageSourceId.new course_id, type
     end
 
     def new_scorer_event_source_history

@@ -15,7 +15,7 @@ describe 'event source historical versioning', :golf do
         namespace::TeeBooked.v(1).new({ sequence: 1 }, course_id: course_id, player_id: player_id, time: time).to_hash
       ]
 
-      Euston::EventSourceHistory.new id: course_id, commits: [ commit ]
+      Euston::MessageSourceHistory.new id: course_id, commits: [ commit ]
     end
 
     let(:command) { namespace::CancelTeeBooking.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }

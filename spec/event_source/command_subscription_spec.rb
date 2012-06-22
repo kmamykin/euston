@@ -2,7 +2,7 @@ describe 'event source command subscription' do
   context 'with a valid event source definition' do
     context 'a single command subscription is defined' do
       class ESCD1
-        include Euston::EventSource
+        include Euston::MessageSource
 
         commands
 
@@ -35,7 +35,7 @@ describe 'event source command subscription' do
 
     context 'a single command subscription is defined for a specific version' do
       class ESCD2
-        include Euston::EventSource
+        include Euston::MessageSource
 
         commands
 
@@ -69,7 +69,7 @@ describe 'event source command subscription' do
 
     context 'a single command subscription is defined for a specific version with an assigned identifier' do
       class ESCD3
-        include Euston::EventSource
+        include Euston::MessageSource
 
         commands
 
@@ -102,7 +102,7 @@ describe 'event source command subscription' do
 
     context 'a single command subscription is defined for with an assigned identifier' do
       class ESCD4
-        include Euston::EventSource
+        include Euston::MessageSource
 
         commands
 
@@ -135,7 +135,7 @@ describe 'event source command subscription' do
 
     context 'multiple command subscriptions are defined with varying settings' do
       class ESCD5
-        include Euston::EventSource
+        include Euston::MessageSource
 
         commands
 
@@ -216,7 +216,7 @@ describe 'event source command subscription' do
       before do
         begin
           class NaughtyCD1
-            include Euston::EventSource
+            include Euston::MessageSource
 
             commands
 
@@ -229,7 +229,7 @@ describe 'event source command subscription' do
       end
 
       subject { exceptions }
-      
+
       it { should_not be_empty }
     end
   end

@@ -2,13 +2,13 @@ describe 'event source transition definition' do
   context 'with a valid event source definition' do
     context 'a single state transition is defined' do
       class ESTD1
-        include Euston::EventSource
+        include Euston::MessageSource
 
         transitions
 
         milk_bought do; end
       end
-      
+
       let(:metadata)  { ESTD1.message_map.to_hash }
 
       describe 'transition metadata' do
@@ -35,7 +35,7 @@ describe 'event source transition definition' do
 
     context 'a single state transition is defined for a specific version' do
       class ESTD2
-        include Euston::EventSource
+        include Euston::MessageSource
 
         transitions
 
@@ -69,7 +69,7 @@ describe 'event source transition definition' do
 
     context 'multiple state transitions are defined' do
       class ESTD3
-        include Euston::EventSource
+        include Euston::MessageSource
 
         transitions
 

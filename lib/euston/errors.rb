@@ -7,5 +7,5 @@ module Euston
   class UnknownMessageError < StandardError; end
   class UnknownSnapshotError < StandardError; end
   class UnroutableMessageError < StandardError; end
-  class UnverifiableEventSource < StandardError; end
+  class UnverifiableMessageSource < StandardError; end
 end

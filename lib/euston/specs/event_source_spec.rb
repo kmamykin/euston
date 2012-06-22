@@ -1,5 +1,5 @@
 module Euston
-  module EventSourceSpec
+  module MessageSourceSpec
     extend ::ActiveSupport::Concern
     extend ::RSpec::Matchers::DSL if Object.const_defined? 'RSpec'
 
@@ -27,7 +27,7 @@ module Euston
                                         type: event_source_type)
         end
 
-        history = Euston::EventSourceHistory.new id: event_source_id, commits: commits, snapshot: snapshot
+        history = Euston::MessageSourceHistory.new id: event_source_id, commits: commits, snapshot: snapshot
         event_source_type.new message_class_finder, history
       end
 

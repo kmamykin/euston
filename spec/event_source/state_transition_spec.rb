@@ -6,8 +6,8 @@ describe 'event source state transition' do
 
   context 'with an state transition initiated with invalid data' do
     module ESST1
-      class InvalidEventSource
-        include Euston::EventSource
+      class InvalidMessageSource
+        include Euston::MessageSource
 
         commands
 
@@ -37,7 +37,7 @@ describe 'event source state transition' do
       end
     end
 
-    let(:instance) { ESST1::InvalidEventSource.new message_class_finder, Euston::EventSourceHistory.new(id: milk_id, type: ESST1::InvalidEventSource) }
+    let(:instance) { ESST1::InvalidMessageSource.new message_class_finder, Euston::MessageSourceHistory.new(id: milk_id, type: ESST1::InvalidMessageSource) }
 
     describe 'the event source instance after the command was processed' do
       let(:exceptions)  { [] }

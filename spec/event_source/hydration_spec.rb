@@ -13,7 +13,7 @@ describe 'event source hydration', :golf do
           namespace::CourseRecordBroken.v(1).new(course_id: course_id, player_id: player_id, score: course_record).to_hash
         ]
 
-        Euston::EventSourceHistory.new id: course_id, commits: [ commit ], sequence: 1
+        Euston::MessageSourceHistory.new id: course_id, commits: [ commit ], sequence: 1
       end
 
       subject { scorer(history).course_records[course_id] }
@@ -34,7 +34,7 @@ describe 'event source hydration', :golf do
         snapshot = Euston::Snapshot.new event_source_id: commit.event_source_id,
                                         sequence: 1
 
-        Euston::EventSourceHistory.new id: course_id, commits: [ commit ], sequence: 2, snapshot: snapshot
+        Euston::MessageSourceHistory.new id: course_id, commits: [ commit ], sequence: 2, snapshot: snapshot
       end
 
       before do
@@ -64,7 +64,7 @@ describe 'event source hydration', :golf do
       end
 
       let(:history) do
-        Euston::EventSourceHistory.new id: course_id, snapshot: snapshot, sequence: 1
+        Euston::MessageSourceHistory.new id: course_id, snapshot: snapshot, sequence: 1
       end
 
       subject { secretary(history).players_with_warnings }
@@ -84,7 +84,7 @@ describe 'event source hydration', :golf do
           namespace::WarningIssuedForSlowPlay.v(1).new(player_id: player_id).to_hash
         ]
 
-        Euston::EventSourceHistory.new id: course_id, commits: [commit], sequence: 1, snapshot: snapshot
+        Euston::MessageSourceHistory.new id: course_id, commits: [commit], sequence: 1, snapshot: snapshot
       end
 
       subject { secretary(history).players_with_warnings }

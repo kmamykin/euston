@@ -127,7 +127,7 @@ class EventStore
 
     return nil if snapshot.nil? && commits.empty?
 
-    EventSourceHistory.new id: event_source_id.id, commits: commits, snapshot: snapshot, type: event_source_id.type
+    MessageSourceHistory.new id: event_source_id.id, commits: commits, snapshot: snapshot, type: event_source_id.type
   end
 
   def get_snapshot event_source_id, max_sequence = FIXNUM_MAX
@@ -312,7 +312,7 @@ class EventStore
   end
 
   def get_event_source_id_from_document_id_hash document
-    EventSourceId.new document['_id']['id'], document['_id']['type']
+    MessageSourceId.new document['_id']['id'], document['_id']['type']
   end
 
   def get_snapshot_from_document document

@@ -2,7 +2,7 @@ module Scenarios
 module GolfCourse
 
 class Starter
-  include Euston::EventSource
+  include Euston::MessageSource
 
   initialization do
     @bookings = {}

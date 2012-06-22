@@ -83,7 +83,7 @@ module Euston
           klass = namespace.const_get constant
           mixins = klass.included_modules
 
-          category = if mixins.include? Euston::EventSource
+          category = if mixins.include? Euston::MessageSource
             :event_source
           elsif mixins.include? Euston::CommandHandler
             :command_handler

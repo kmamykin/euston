@@ -1,5 +1,5 @@
 module Euston
-  class EventSourceId
+  class MessageSourceId
     def initialize id, type
       @id, @type = id, type.to_s
     end
