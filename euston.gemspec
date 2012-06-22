@@ -51,6 +51,9 @@ Gem::Specification.new do |s|
     spec/command_handler_spec.rb
     spec/command_spec.rb
     spec/constant_loader_spec.rb
+    spec/data_store/commits_spec.rb
+    spec/data_store/scenario_spec.rb
+    spec/data_store/snapshots_spec.rb
     spec/event_handler_spec.rb
     spec/event_source/command_invocation_spec.rb
     spec/event_source/command_publishing_spec.rb
@@ -62,9 +65,6 @@ Gem::Specification.new do |s|
     spec/event_source/snapshot_spec.rb
     spec/event_source/state_transition_spec.rb
     spec/event_source/transition_definitions_spec.rb
-    spec/event_store/commits_spec.rb
-    spec/event_store/scenario_spec.rb
-    spec/event_store/snapshots_spec.rb
     spec/factories/book_tee_command.rb
     spec/factories/check_for_slow_play_command.rb
     spec/factories/commit.rb
