@@ -14,7 +14,7 @@ module Euston
       end
 
       def consume message
-        @commit = Commit.new message_source_id: message_source_id,
+        @commit = Commit.new message_source_id: @event_source_history.message_source_id,
                              sequence: @event_source_history.next_sequence,
                              origin: message
 
@@ -33,7 +33,7 @@ module Euston
         snapshot_metadata = self.class.message_map.get_newest_snapshot_metadata
         body = send snapshot_metadata[:method_name]
 
-        snapshot = Snapshot.new message_source_id: message_source_id,
+        snapshot = Snapshot.new message_source_id: @event_source_history.message_source_id,
                                 sequence: @event_source_history.sequence,
                                 version: snapshot_metadata[:version],
                                 body: body
@@ -44,7 +44,7 @@ module Euston
       private
 
       def message_source_id
-        @event_source_history.message_source_id
+        @event_source_history.message_source_id.id
       end
 
       def publish_command command

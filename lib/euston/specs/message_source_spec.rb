@@ -20,7 +20,7 @@ module Euston
         end
 
         unless events.empty?
-          commits << Euston::Commit.new(message_source_id: Euston::MessageSourceId.new(message_source_id, event_source_type),
+          commits << Euston::Commit.new(message_source_id: full_message_source_id,
                                         events: events,
                                         id: Uuid.generate,
                                         sequence: 1)
@@ -33,7 +33,8 @@ module Euston
       let(:command_namespaces)          { [] }
       let(:euston_namespaces)           { Euston::Namespaces.new commands: command_namespaces, events: event_namespaces, message_handlers: message_handler_namespaces }
       let(:event_namespaces)            { [] }
-      let(:message_source_id)             { Uuid.generate }
+      let(:message_source_id)           { Uuid.generate }
+      let(:full_message_source_id)      { Euston::MessageSourceId.new message_source_id, event_source_type }
       let(:message_class_finder)        { Euston::MessageClassFinder.new euston_namespaces }
       let(:message_handler_namespaces)  { [] }
       let(:snapshot)                    { nil }
@@ -131,9 +132,8 @@ module Euston
 
       def prepare_snapshot &block
         let(:snapshot) do
-          defaults = { message_source_id:  message_source_id,
-                       sequence:         1,
-                       type:             event_source_type }
+          defaults = { message_source_id: full_message_source_id,
+                       sequence:          1 }
 
           Euston::Snapshot.new defaults.merge instance_eval(&block)
         end
