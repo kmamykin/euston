@@ -27,7 +27,7 @@ class EventStore
 
   def already_processed_message? event_source_id, message_id
     ErrorHandler.wrap do
-      !@commits.find_one('_id.event_source_id' => event_source_id, 'headers.origin.headers.id' => message_id).nil?
+      !@commits.find_one('_id.id' => event_source_id, 'headers.origin.headers.id' => message_id).nil?
     end
   end
 
@@ -68,7 +68,7 @@ class EventStore
       }
 
       if options.has_key? :event_source_id
-        query['_id.event_source_id'] = options[:event_source_id]
+        query['_id.id'] = options[:event_source_id]
       end
 
       map_over @commits.find(query, sort: order, batch_size: 100).to_a, :get_commit_from_document
@@ -100,7 +100,7 @@ class EventStore
 
   def find_snapshots event_source_id
     ErrorHandler.wrap do
-      query = { '_id.event_source_id' => event_source_id }
+      query = { '_id.id' => event_source_id }
       order = [ '_id.sequence', @ascending ]
 
       map_over @snapshots.find(query, sort: order).to_a, :get_snapshot_from_document
@@ -130,8 +130,8 @@ class EventStore
 
   def get_snapshot event_source_id, max_sequence = FIXNUM_MAX
     ErrorHandler.wrap do
-      query = { '_id' => {  '$gt' => { 'event_source_id' => event_source_id, 'sequence' => nil },
-                           '$lte' => { 'event_source_id' => event_source_id, 'sequence' => max_sequence } } }
+      query = { '_id' => {  '$gt' => { 'id' => event_source_id, 'sequence' => nil },
+                           '$lte' => { 'id' => event_source_id, 'sequence' => max_sequence } } }
 
       order = [ '_id', @descending ]
 
@@ -142,8 +142,8 @@ class EventStore
   def put_commit commit
     ErrorHandler.wrap do
       ConcurrentOperation.new.when(:concurrency_error_detected) do |error|
-        query = { '_id.event_source_id' => commit.event_source_id,
-                  '_id.sequence'        => commit.sequence }
+        query = { '_id.id'        => commit.event_source_id,
+                  '_id.sequence'  => commit.sequence }
 
         committed = @commits.find_one query
         raise DuplicateCommitError if !committed.nil? && committed['headers']['id'] == commit.id
@@ -178,8 +178,8 @@ class EventStore
       query = {
         '$or' => commits.map do |commit|
           {
-            '_id.event_source_id' => commit.event_source_id,
-            '_id.sequence'        => commit.sequence
+            '_id.id'        => commit.event_source_id,
+            '_id.sequence'  => commit.sequence
           }
         end }
 
@@ -258,7 +258,7 @@ class EventStore
     Commit.new id:              document['headers']['id'],
                commands:        document['body']['commands'].pluck(:symbolize_keys, true),
                duration:        document['headers']['duration'],
-               event_source_id: document['_id']['event_source_id'],
+               event_source_id: document['_id']['id'],
                events:          document['body']['events'].pluck(:symbolize_keys, true),
                origin:          document['headers']['origin'].symbolize_keys(true),
                sequence:        document['_id']['sequence'],
@@ -269,8 +269,8 @@ class EventStore
   def get_document_for_commit commit
     {
       '_id' => {
-        'event_source_id' => commit.event_source_id,
-        'sequence'        => commit.sequence
+        'id'        => commit.event_source_id,
+        'sequence'  => commit.sequence
       },
 
       'headers' => {
@@ -299,8 +299,8 @@ class EventStore
   def get_document_for_snapshot snapshot
     {
       '_id' => {
-        'event_source_id'  => snapshot.event_source_id,
-        'sequence'         => snapshot.sequence
+        'id'        => snapshot.event_source_id,
+        'sequence'  => snapshot.sequence
       },
       'headers' => {
         'type'        => snapshot.type,
@@ -316,7 +316,7 @@ class EventStore
   end
 
   def get_snapshot_from_document document
-    Snapshot.new event_source_id:         document['_id']['event_source_id'],
+    Snapshot.new event_source_id:         document['_id']['id'],
                  sequence:                document['_id']['sequence'],
                  type:                    document['headers']['type'],
                  version:                 document['headers']['version'],
