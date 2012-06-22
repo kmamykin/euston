@@ -1,7 +1,7 @@
 module Euston
   class MessageSourceHistory
-    def self.empty event_source_type
-      MessageSourceHistory.new id: Uuid.generate, type: event_source_type
+    def self.empty message_source_type
+      MessageSourceHistory.new id: Uuid.generate, type: message_source_type
     end
 
     def self.defaults
