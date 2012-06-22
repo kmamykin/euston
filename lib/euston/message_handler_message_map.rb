@@ -121,6 +121,10 @@ module Euston
       { method_name: method_name_for_snapshot(:save_to, version), version: version }
     end
 
+    def has_snapshot_metadata?
+      !@map[:snapshots].keys.empty?
+    end
+
     def verify_message_classes command_namespaces, event_namespaces
       [{ section: :commands,    namespaces: command_namespaces },
        { section: :events,      namespaces: event_namespaces },

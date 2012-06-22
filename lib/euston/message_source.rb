@@ -41,6 +41,10 @@ module Euston
         callback :snapshot_taken, snapshot
       end
 
+      def supports_snapshots?
+        self.class.message_map.has_snapshot_metadata?
+      end
+
       private
 
       def message_source_id
