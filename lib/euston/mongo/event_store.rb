@@ -27,7 +27,8 @@ class EventStore
 
   def already_processed_message? event_source_id, message_id
     ErrorHandler.wrap do
-      !@commits.find_one('_id.id' => event_source_id, 'headers.origin.headers.id' => message_id).nil?
+      query = get_document_id_hash_from_event_source_id(event_source_id, '_id.').merge('headers.origin.headers.id' => message_id)
+      !@commits.find_one(query).nil?
     end
   end
 
@@ -68,7 +69,8 @@ class EventStore
       }
 
       if options.has_key? :event_source_id
-        query['_id.id'] = options[:event_source_id]
+        query['_id.id'] = options[:event_source_id].id
+        query['_id.type'] = options[:event_source_id].type
       end
 
       map_over @commits.find(query, sort: order, batch_size: 100).to_a, :get_commit_from_document
@@ -100,7 +102,7 @@ class EventStore
 
   def find_snapshots event_source_id
     ErrorHandler.wrap do
-      query = { '_id.id' => event_source_id }
+      query = get_document_id_hash_from_event_source_id event_source_id, '_id.'
       order = [ '_id.sequence', @ascending ]
 
       map_over @snapshots.find(query, sort: order).to_a, :get_snapshot_from_document
@@ -125,13 +127,15 @@ class EventStore
 
     return nil if snapshot.nil? && commits.empty?
 
-    EventSourceHistory.new id: event_source_id, commits: commits, snapshot: snapshot
+    EventSourceHistory.new id: event_source_id.id, commits: commits, snapshot: snapshot, type: event_source_id.type
   end
 
   def get_snapshot event_source_id, max_sequence = FIXNUM_MAX
     ErrorHandler.wrap do
-      query = { '_id' => {  '$gt' => { 'id' => event_source_id, 'sequence' => nil },
-                           '$lte' => { 'id' => event_source_id, 'sequence' => max_sequence } } }
+      query = {
+        '_id' => {
+          '$gt' => get_document_id_hash_from_event_source_id(event_source_id).merge('sequence' => nil),
+          '$lte' => get_document_id_hash_from_event_source_id(event_source_id).merge('sequence' => max_sequence) } }
 
       order = [ '_id', @descending ]
 
@@ -142,9 +146,7 @@ class EventStore
   def put_commit commit
     ErrorHandler.wrap do
       ConcurrentOperation.new.when(:concurrency_error_detected) do |error|
-        query = { '_id.id'        => commit.event_source_id,
-                  '_id.sequence'  => commit.sequence }
-
+        query = get_document_id_hash_from_event_source_id(commit.event_source_id, '_id.').merge('_id.sequence' => commit.sequence)
         committed = @commits.find_one query
         raise DuplicateCommitError if !committed.nil? && committed['headers']['id'] == commit.id
       end
@@ -177,10 +179,7 @@ class EventStore
     ErrorHandler.wrap do
       query = {
         '$or' => commits.map do |commit|
-          {
-            '_id.id'        => commit.event_source_id,
-            '_id.sequence'  => commit.sequence
-          }
+          get_document_id_hash_from_event_source_id(commit.event_source_id, '_id.').merge('_id.sequence' => commit.sequence)
         end }
 
       modifiers = {
@@ -258,24 +257,19 @@ class EventStore
     Commit.new id:              document['headers']['id'],
                commands:        document['body']['commands'].pluck(:symbolize_keys, true),
                duration:        document['headers']['duration'],
-               event_source_id: document['_id']['id'],
+               event_source_id: get_event_source_id_from_document_id_hash(document),
                events:          document['body']['events'].pluck(:symbolize_keys, true),
                origin:          document['headers']['origin'].symbolize_keys(true),
                sequence:        document['_id']['sequence'],
-               timestamp:       Time.at(document['headers']['timestamp']['as_float']).utc,
-               type:            document['headers']['type']
+               timestamp:       Time.at(document['headers']['timestamp']['as_float']).utc
   end
 
   def get_document_for_commit commit
     {
-      '_id' => {
-        'id'        => commit.event_source_id,
-        'sequence'  => commit.sequence
-      },
+      '_id' => get_document_id_hash_from_event_source_id(commit.event_source_id).merge('sequence' => commit.sequence),
 
       'headers' => {
         'id'          => commit.id,
-        'type'        => commit.type.to_s,
         'version'     => 1,
         'origin'      => commit.origin,
         'dispatched'  => false,
@@ -298,12 +292,9 @@ class EventStore
 
   def get_document_for_snapshot snapshot
     {
-      '_id' => {
-        'id'        => snapshot.event_source_id,
-        'sequence'  => snapshot.sequence
-      },
+      '_id' => get_document_id_hash_from_event_source_id(snapshot.event_source_id).merge('sequence' => snapshot.sequence),
+
       'headers' => {
-        'type'        => snapshot.type,
         'version'     => snapshot.version,
         'duration'    => snapshot.duration,
         'timestamp'   => {
@@ -315,23 +306,31 @@ class EventStore
     }
   end
 
+  def get_document_id_hash_from_event_source_id event_source_id, prefix = ''
+    { "#{prefix}id"    => event_source_id.id,
+      "#{prefix}type"  => event_source_id.type }
+  end
+
+  def get_event_source_id_from_document_id_hash document
+    EventSourceId.new document['_id']['id'], document['_id']['type']
+  end
+
   def get_snapshot_from_document document
-    Snapshot.new event_source_id:         document['_id']['id'],
-                 sequence:                document['_id']['sequence'],
-                 type:                    document['headers']['type'],
-                 version:                 document['headers']['version'],
-                 body:                    document['body'].symbolize_keys(true)
+    Snapshot.new event_source_id: get_event_source_id_from_document_id_hash(document),
+                 sequence:        document['_id']['sequence'],
+                 version:         document['headers']['version'],
+                 body:            document['body'].symbolize_keys(true)
   end
 
   def get_stream_from_document document
-    Stream.new document['_id'],
-               document['commit_sequence'],
-               document['snapshot_sequence']
+    Stream.new event_source_id:   get_event_source_id_from_document_id_hash(document),
+               commit_sequence:   document['commit_sequence'],
+               snapshot_sequence: document['snapshot_sequence']
   end
 
   def increment_stream_position_after_commit event_source_id, sequence, unsnapshotted
     async_job do
-      id = { '_id' => event_source_id }
+      id = { '_id' => get_document_id_hash_from_event_source_id(event_source_id) }
 
       modifiers = { '$set' => { 'commit_sequence'   => sequence },
                     '$inc' => { 'snapshot_sequence' => 0,
@@ -342,7 +341,7 @@ class EventStore
   end
 
   def increment_stream_position_after_snapshot snapshot
-    id = { '_id' => snapshot.event_source_id }
+    id = { '_id' => get_document_id_hash_from_event_source_id(snapshot.event_source_id) }
     stream_commit_sequence = @streams.find_one(id)['commit_sequence']
 
     modifiers = { '$set'   => { 'snapshot_sequence' => snapshot.sequence,

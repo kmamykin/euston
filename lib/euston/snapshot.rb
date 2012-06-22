@@ -9,13 +9,12 @@ module Euston
 
       @event_source_id          = options[:event_source_id]
       @sequence                 = options[:sequence]
-      @type                     = options[:type]
       @version                  = options[:version]
       @timestamp                = options[:timestamp]
       @body                     = options[:body]
     end
 
-    attr_reader :event_source_id, :sequence, :type, :version, :timestamp, :body
+    attr_reader :event_source_id, :sequence, :version, :timestamp, :body
     attr_accessor :duration
   end
 end

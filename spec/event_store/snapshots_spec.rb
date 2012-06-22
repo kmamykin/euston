@@ -12,9 +12,13 @@ describe 'mongo event store - snapshots', :golf, :mongo do
 
     subject { retrieved_snapshot }
 
-    its(:event_source_id)         { should == snapshot.event_source_id }
+    describe 'the snapshot event source id' do
+      subject     { retrieved_snapshot.event_source_id }
+      its(:id)    { should == snapshot.event_source_id.id }
+      its(:type)  { should == snapshot.event_source_id.type }
+    end
+
     its(:sequence)                { should == snapshot.sequence }
-    its(:type)                    { should == snapshot.type }
     its(:version)                 { should == snapshot.version }
 
     describe 'contained body' do
@@ -25,7 +29,7 @@ describe 'mongo event store - snapshots', :golf, :mongo do
   end
 
   context 'when a user retrieves a snapshot using a particular sequence number' do
-    let(:event_source_id)   { Uuid.generate }
+    let(:event_source_id)   { Factory.build :event_source_id }
 
     let(:too_old_snapshot)  { Factory.build :snapshot, event_source_id: event_source_id, sequence: 1 }
     let(:correct_snapshot)  { Factory.build :snapshot, event_source_id: event_source_id, sequence: 3, body: { val: rand(1000) } }
@@ -60,7 +64,7 @@ describe 'mongo event store - snapshots', :golf, :mongo do
   end
 
   context 'when a snapshot has been added to the most recent commit of a stream' do
-    let(:event_source_id)     { Uuid.generate }
+    let(:event_source_id)     { Factory.build :event_source_id }
     let(:oldest_commit)       { Factory.build :commit, event_source_id: event_source_id, sequence: 1 }
     let(:next_oldest_commit)  { Factory.build :commit, event_source_id: event_source_id, sequence: 3 }
     let(:newest_commit)       { Factory.build :commit, event_source_id: event_source_id, sequence: 5 }
@@ -82,6 +86,7 @@ describe 'mongo event store - snapshots', :golf, :mongo do
   end
 
   context 'when a user adds a commit after a snapshot' do
+    let(:event_source_id)     { Factory.build :event_source_id }
     let(:within_threshold)    { 2 }
     let(:over_threshold)      { 3 }
     let(:snapshot_data)       { { val: rand(1000) } }

@@ -7,7 +7,7 @@ module Euston
 
     included do
       def initialize message_class_finder, history = nil
-        @event_source_history = history || EventSourceHistory.empty
+        @event_source_history = history || EventSourceHistory.empty(self.class)
         @message_class_finder = message_class_finder
         initialization if self.class.message_map.has_initializer?
         restore_state_from_history
@@ -16,8 +16,7 @@ module Euston
       def consume message
         @commit = Commit.new event_source_id: event_source_id,
                              sequence: @event_source_history.next_sequence,
-                             origin: message,
-                             type: self.class
+                             origin: message
 
         call_state_change_function message[:headers][:type],
                                    message[:headers][:version],
@@ -36,7 +35,6 @@ module Euston
 
         snapshot = Snapshot.new event_source_id: event_source_id,
                                 sequence: @event_source_history.sequence,
-                                type: self.class.to_s,
                                 version: snapshot_metadata[:version],
                                 body: body
 
@@ -46,7 +44,7 @@ module Euston
       private
 
       def event_source_id
-        @event_source_history.id
+        @event_source_history.event_source_id
       end
 
       def publish_command command

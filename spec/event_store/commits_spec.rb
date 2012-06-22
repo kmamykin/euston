@@ -17,10 +17,10 @@ describe 'mongo event store - commits', :golf, :mongo do
       describe 'the saved commit' do
         subject { saved_commits.first }
 
-        its('event_source_id') { should == commit.event_source_id }
-        its('sequence')        { should == 1 }
-        its('timestamp.to_f')  { should == commit.timestamp.to_f }
-        its('type')            { should == commit.type }
+        its('event_source_id.id')   { should == commit.event_source_id.id }
+        its('event_source_id.type') { should == commit.event_source_id.type }
+        its('sequence')             { should == 1 }
+        its('timestamp.to_f')       { should == commit.timestamp.to_f }
 
         describe 'the origin of the commit' do
           subject { RecursiveOpenStruct.new(saved_commits.first.origin) }
@@ -132,8 +132,8 @@ describe 'mongo event store - commits', :golf, :mongo do
   end
 
   context 'given an event store that contains several commits' do
-    let(:event_source_id1)  { Uuid.generate }
-    let(:event_source_id2)  { Uuid.generate }
+    let(:event_source_id1)  { Factory.build(:event_source_id) }
+    let(:event_source_id2)  { Factory.build(:event_source_id) }
     let(:commit_1_1) { Factory.build :commit, event_source_id: event_source_id1, sequence: 1 }
     let(:commit_1_2) { Factory.build :commit, event_source_id: event_source_id1, sequence: 2 }
     let(:commit_2_1) { Factory.build :commit, event_source_id: event_source_id2, sequence: 1 }
@@ -188,7 +188,7 @@ describe 'mongo event store - commits', :golf, :mongo do
   end
 
   context 'given an event store that contains a lot of commits for a single event source' do
-    let(:event_source_id) { Uuid.generate }
+    let(:event_source_id) { Factory.build(:event_source_id) }
 
     before do
       large_body = { values: Array.new(100) { Uuid.generate } }

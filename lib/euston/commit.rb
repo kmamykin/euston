@@ -20,7 +20,6 @@ module Euston
       @origin             = options[:origin]
       @sequence           = options[:sequence]
       @timestamp          = options[:timestamp]
-      @type               = options[:type]
 
       @origin[:headers].delete :origin unless @origin.nil?
     end
@@ -33,7 +32,7 @@ module Euston
       @events << marshal_dup(event.to_hash).tap { |e| e[:headers][:sequence] = @sequence + @events.length }
     end
 
-    attr_reader :commands, :event_source_id, :events, :id, :origin, :sequence, :timestamp, :type
+    attr_reader :commands, :event_source_id, :events, :id, :origin, :sequence, :timestamp
     attr_accessor :duration
 
     def empty?

@@ -1,11 +1,11 @@
 describe 'event source snapshots', :golf do
   context 'with a event source that has no snapshot capability' do
     let(:history) do
-      commit1 = Euston::Commit.new event_source_id: course_id, events: [
+      commit1 = Euston::Commit.new event_source_id: new_starter_event_source_id, events: [
         namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash
       ]
 
-      commit2 = Euston::Commit.new event_source_id: course_id, sequence: 2, events: [
+      commit2 = Euston::Commit.new event_source_id: commit1.event_source_id, sequence: 2, events: [
         namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time + 1000).to_hash
       ]
 
@@ -27,11 +27,11 @@ describe 'event source snapshots', :golf do
 
   context 'with a event source that has a snapshot capability' do
     let(:history) do
-      commit1 = Euston::Commit.new event_source_id: course_id, events: [
+      commit1 = Euston::Commit.new event_source_id: new_secretary_event_source_id, events: [
         namespace::WarningIssuedForSlowPlay.v(1).new(player_id: :player_1).to_hash
       ]
 
-      commit2 = Euston::Commit.new event_source_id: course_id, sequence: 2, events: [
+      commit2 = Euston::Commit.new event_source_id: commit1.event_source_id, sequence: 2, events: [
         namespace::WarningIssuedForSlowPlay.v(1).new(player_id: player_id).to_hash
       ]
 

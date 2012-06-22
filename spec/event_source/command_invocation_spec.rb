@@ -2,7 +2,7 @@ describe 'event source command invocation', :golf do
   context 'a command is consumed which causes a transition to a new state' do
     let(:command) { namespace::BookTee.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }
 
-    before { starter(new_event_source_history).consume command }
+    before { starter(new_starter_event_source_history).consume command }
 
     subject { @commit }
 

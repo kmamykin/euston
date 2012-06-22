@@ -34,13 +34,15 @@ class StructureInitialiser
     ], unique: false, name: 'dispatched_commits'
 
     commits.ensure_index [
-      ['_id.event_source_id', asc],
+      ['_id.id', asc],
+      ['_id.type', asc],
       ['_id.sequence', asc],
       ['body.events.headers.sequence', asc]
     ], unique: false, name: 'commits_by_event_sequence'
 
     commits.ensure_index [
-      ['_id.event_source_id', asc],
+      ['_id.id', asc],
+      ['_id.type', asc],
       ['headers.origin.headers.id', asc]
     ], unique: true, name: 'commit_idempotence_by_origin'
 
