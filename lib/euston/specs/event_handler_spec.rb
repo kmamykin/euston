@@ -32,8 +32,6 @@ module Euston
             @exception_caught
           end
 
-          it { should_not be_nil }
-
           instance_eval(&block) if block_given?
         end
       end
