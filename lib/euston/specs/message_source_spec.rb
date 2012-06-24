@@ -52,7 +52,26 @@ module Euston
                               snapshot_taken: ->(snapshot)  { @euston_snapshot_taken = snapshot })
 
           [@euston_incoming_messages].flatten.compact.each do |message|
-            message_source.consume message.to_hash
+            if message.is_a? Hash
+              message_class = Factory.build("#{message[:headers][:type]}_v#{message[:headers][:version]}".to_sym).class
+              message = message_class.headers(message[:headers]).body(message[:body])
+            end
+
+            if message.valid?
+              message_source.consume message.to_hash
+            else
+              raise <<-EOS
+An attempt was made to consume an invalid message. Check the messages you are providing to this spec.
+
+Message:
+
+#{message.to_hash}
+
+Errors:
+
+#{message.errors.full_messages}
+              EOS
+            end
           end
 
           message_source.take_snapshot if message_source.supports_snapshots?
