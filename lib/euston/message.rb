@@ -20,6 +20,7 @@ module Euston
         extend ActiveModel::Naming
         include ActiveModel::Validations
         include ActiveModel::Validations::Callbacks
+        include Euston::VersionedMessage
 
         after_validation do
           id = @headers[:id]
@@ -87,4 +88,5 @@ module Euston
 
   class Command < Message; end
   class Event   < Message; end
+  module VersionedMessage; end
 end
