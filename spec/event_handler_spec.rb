@@ -23,7 +23,7 @@ describe 'event handler', :golf do
       describe 'version 1' do
         subject { event_metadata[:warning_issued_for_slow_play][1] }
 
-        its([:identifier])    { should == :id }
+        its([:identifier])    { should be_nil }
         its([:message_type])  { should == :event }
         its([:message_class]) { should == 'WarningIssuedForSlowPlay_v1' }
       end

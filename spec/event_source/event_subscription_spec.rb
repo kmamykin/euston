@@ -25,7 +25,7 @@ describe 'event source event subscription' do
           describe 'version 1' do
             subject { metadata[:events][:milk_bought][1] }
 
-            its([:identifier])    { should == :id }
+            its([:identifier])    { should be_nil }
             its([:message_type])  { should == :event }
             its([:message_class]) { should == 'MilkBought_v1' }
           end
@@ -59,7 +59,7 @@ describe 'event source event subscription' do
           describe 'version 2' do
             subject { metadata[:events][:milk_bought][2] }
 
-            its([:identifier])    { should == :id }
+            its([:identifier])    { should be_nil }
             its([:message_type])  { should == :event }
             its([:message_class]) { should == 'MilkBought_v2' }
           end
@@ -163,7 +163,7 @@ describe 'event source event subscription' do
           describe 'version 1' do
             subject { metadata[:events][:milk_bought][1] }
 
-            its([:identifier])    { should == :id }
+            its([:identifier])    { should be_nil }
             its([:message_type])  { should == :event }
             its([:message_class]) { should == 'MilkBought_v1' }
           end
@@ -200,7 +200,7 @@ describe 'event source event subscription' do
           describe 'version 2' do
             subject { metadata[:events][:paper_read][2] }
 
-            its([:identifier])    { should == :id }
+            its([:identifier])    { should be_nil }
             its([:message_type])  { should == :event }
             its([:message_class]) { should == 'PaperRead_v2' }
           end

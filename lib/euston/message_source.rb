@@ -95,6 +95,10 @@ module Euston
     end
 
     module ClassMethods
+      def id value
+        message_map.define_identifier value
+      end
+
       def snapshots
         @message_map_section = :snapshots
       end

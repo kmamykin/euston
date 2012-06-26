@@ -23,7 +23,7 @@ describe 'command handler', :golf do
       describe 'version 1' do
         subject { command_metadata[:log_temperature][1] }
 
-        its([:identifier])    { should == :id }
+        its([:identifier])    { should be_nil }
         its([:message_type])  { should == :command }
         its([:message_class]) { should == 'LogTemperature_v1' }
       end

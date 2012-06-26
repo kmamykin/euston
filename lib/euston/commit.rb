@@ -14,7 +14,7 @@ module Euston
 
       @commands           = options[:commands]
       @duration           = options[:duration]
-      @message_source_id    = options[:message_source_id]
+      @message_source_id  = options[:message_source_id]
       @events             = options[:events]
       @id                 = options[:id]
       @origin             = options[:origin]

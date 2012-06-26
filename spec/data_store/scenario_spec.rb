@@ -15,7 +15,7 @@ describe 'mongo event store - scenario walkthrough', :golf, :mongo do
 
     sleep 0.25
 
-    @stream = data_store.find_streams_to_snapshot(2).find { |stream| stream.message_source_id.id == course_id }
+    @stream = data_store.find_streams_to_snapshot(2).find { |stream| stream.message_source_id.id == "george" }
     history = data_store.get_history @stream.message_source_id
 
     Euston::ConstantLoader.new.when(:hit) do |klass|
@@ -33,7 +33,7 @@ describe 'mongo event store - scenario walkthrough', :golf, :mongo do
   describe 'the snashot event source id' do
     subject { data_store.get_snapshot(@stream.message_source_id).message_source_id }
 
-    its(:id)    { should == course_id }
+    its(:id)    { should == "george" }
     its(:type)  { should == namespace::Secretary.to_s }
   end
 

@@ -4,13 +4,15 @@ module GolfCourse
 class Secretary
   include Euston::MessageSource
 
+  id "george"
+
   initialization do
     @players_with_warnings = {}
   end
 
   events
 
-  group_playing_slowly :course_id do |headers, body|
+  group_playing_slowly do |headers, body|
     transition_to :warning_issued_for_slow_play, 1, body
   end
 

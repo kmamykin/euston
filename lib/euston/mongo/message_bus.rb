@@ -22,7 +22,9 @@ class MessageBus
   private
 
   def build_event_source_handler handler_type, message, mapping
-    message_source_id = MessageSourceId.new message[:body][mapping[:identifier]], handler_type
+    identifier = message[:body][mapping[:identifier]] || handler_type.message_map.to_hash[:identifier] || Uuid.generate
+    message_source_id = MessageSourceId.new identifier, handler_type
+
     return nil if @data_store.already_processed_message? message_source_id, message[:headers][:id]
 
     start_time = Time.now.to_f

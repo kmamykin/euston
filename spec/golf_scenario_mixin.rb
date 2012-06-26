@@ -3,7 +3,7 @@ module GolfScenarioMixin
 
   included do
     let(:course_id)                 { Uuid.generate }
-    let(:message_source_id)           { course_id }
+    let(:message_source_id)         { course_id }
     let(:message_class_finder)      { Euston::MessageClassFinder.new namespaces }
     let(:namespace)                 { Scenarios::GolfCourse }
     let(:namespaces)                { Euston::Namespaces.new message_handlers: namespace, commands: namespace, events: namespace }

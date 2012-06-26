@@ -14,7 +14,7 @@ module Euston
       section = @map[section_name]
       section[message_name] = {} unless section.key? message_name
       message = section[message_name]
-      identifier, version = :id, 1
+      identifier, version = nil, 1
 
       while arg = args.shift
         version = arg if arg.is_a? Integer
@@ -32,6 +32,10 @@ module Euston
       message[version][:identifier] = identifier unless section_name == :transitions
 
       @message_defined_callback.call method_name, block
+    end
+
+    def define_identifier id
+      @map[:identifier] = id
     end
 
     def define_initializer &block
@@ -141,6 +145,10 @@ module Euston
           end
         end
       end
+    end
+
+    def has_identifier?
+      !@map[:identifier].nil?
     end
 
     def has_initializer?
