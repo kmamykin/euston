@@ -10,7 +10,7 @@ module Euston
 
     def initialize opts = {}
       opts = self.class.defaults.merge(opts)
-      raise 'You must pass an :id when creating an MessageSourceHistory' if opts[:id].nil?
+      raise 'You must pass an :id when creating a MessageSourceHistory' if opts[:id].nil?
       @id, @commits, @snapshot = opts[:id], opts[:commits], opts[:snapshot]
 
       @sequence = if @snapshot.nil?
