@@ -32,7 +32,7 @@ class Starter
 
   start_group :course_id do |headers, body|
     transition_to :round_started, 1, body
-    publish_command CheckForSlowPlay.v(1).new({ send_at: Time.now + 60*60*4 }, body)
+    publish_command CheckForSlowPlay.v(1).new({ dispatch_at: Time.now + 60*60*4 }, body)
   end
 
   events
