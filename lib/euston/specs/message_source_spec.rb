@@ -58,6 +58,17 @@ module Euston
             end
 
             if message.valid?
+              hash = message.to_hash
+              message_mapping = message_source_type.message_map.get_mapping_for_message hash
+
+              if hash[:body][message_mapping[:identifier]].blank?
+                raise <<-EOS
+According to the message map for this message source type (#{message_source_type}), there should have been a message source id in the :#{message_mapping[:identifier]} field of the following incoming message, but no such id was found:
+
+#{hash}
+EOS
+              end
+
               message_source.consume message.to_hash
             else
               raise <<-EOS
