@@ -1,7 +1,7 @@
-describe 'event source command publishing', :golf do
+describe 'message source command publishing', :golf do
   context 'when the command being published is valid' do
     let(:history) do
-      commit = Euston::Commit.new message_source_id: new_starter_event_source_history.message_source_id,
+      commit = Euston::Commit.new message_source_id: new_starter_message_source_history.message_source_id,
                                   events: [
         namespace::TeeBooked.v(1).new({ sequence: 1 }, course_id: course_id, player_id: player_id, time: time).to_hash
       ]
@@ -44,9 +44,9 @@ describe 'event source command publishing', :golf do
       end
     end
 
-    let(:buggy_event_source) do
+    let(:buggy_message_source) do
       type = namespace::MessageSourceWhichPublishesInvalidCommands
-      type.new(message_class_finder, new_event_source_history(type)).when(:commit_created) do |commit|
+      type.new(message_class_finder, new_message_source_history(type)).when(:commit_created) do |commit|
         @commit = commit
       end
     end
@@ -56,7 +56,7 @@ describe 'event source command publishing', :golf do
 
     before do
       begin
-        buggy_event_source.consume message
+        buggy_message_source.consume message
       rescue Euston::InvalidCommandError => e
         exceptions << e
       end

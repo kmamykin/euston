@@ -1,5 +1,5 @@
-describe 'event source transition definition' do
-  context 'with a valid event source definition' do
+describe 'message source transition definition' do
+  context 'with a valid message source definition' do
     context 'a single state transition is defined' do
       class ESTD1
         include Euston::MessageSource

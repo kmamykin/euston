@@ -1,5 +1,5 @@
-describe 'event source command subscription' do
-  context 'with a valid event source definition' do
+describe 'message source command subscription' do
+  context 'with a valid message source definition' do
     context 'a single command subscription is defined' do
       class ESCD1
         include Euston::MessageSource
@@ -209,7 +209,7 @@ describe 'event source command subscription' do
     end
   end
 
-  context 'with invalid an event source' do
+  context 'with invalid an message source' do
     context 'the same command subscription version is defined twice' do
       let(:exceptions) { [] }
 

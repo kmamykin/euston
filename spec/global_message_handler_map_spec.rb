@@ -1,5 +1,5 @@
 describe 'global message handler map' do
-  context 'with an event source containing an unverifiable command' do
+  context 'with an message source containing an unverifiable command' do
     module GMM2
       class MessageSourceWithUnverifiableCommand
         include Euston::MessageSource
@@ -28,7 +28,7 @@ describe 'global message handler map' do
     its(:to_s) { should include 'version 1' }
   end
 
-  context 'with an event source containing a verifiable command and an unverifiable command' do
+  context 'with an message source containing a verifiable command and an unverifiable command' do
     module GMM3
       class MessageSourceWithUnverifiableCommand
         include Euston::MessageSource
@@ -66,7 +66,7 @@ describe 'global message handler map' do
     its(:to_s) { should include 'version 2' }
   end
 
-  context 'with an event source containing an unverifiable event' do
+  context 'with an message source containing an unverifiable event' do
     module GMM4
       class MessageSourceWithUnverifiableEvent
         include Euston::MessageSource
@@ -95,7 +95,7 @@ describe 'global message handler map' do
     its(:to_s) { should include 'version 3' }
   end
 
-  context 'with an event source containing a verifiable event and an unverifiable event' do
+  context 'with an message source containing a verifiable event and an unverifiable event' do
     module GMM5
       class MessageSourceWithUnverifiableEvent
         include Euston::MessageSource
@@ -133,7 +133,7 @@ describe 'global message handler map' do
     its(:to_s) { should include 'version 1' }
   end
 
-  context 'with an event source containing an unverifiable transition' do
+  context 'with an message source containing an unverifiable transition' do
     module GMM6
       class MessageSourceWithUnverifiableTransition
         include Euston::MessageSource
@@ -162,7 +162,7 @@ describe 'global message handler map' do
     its(:to_s) { should include 'version 2' }
   end
 
-  context 'with an event source containing a verifiable event and an unverifiable event' do
+  context 'with an message source containing a verifiable event and an unverifiable event' do
     module GMM7
       class MessageSourceWithUnverifiableTransition
         include Euston::MessageSource
@@ -275,7 +275,7 @@ describe 'global message handler map' do
 
       describe 'discovered handler' do
         subject           { discovered[0] }
-        its([:category])  { should == :event_source }
+        its([:category])  { should == :message_source }
         its([:handler])   { should == GMM9::RoutableMessageSource }
       end
     end

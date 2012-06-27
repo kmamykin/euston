@@ -12,7 +12,7 @@ describe 'mongo event store - snapshots', :golf, :mongo do
 
     subject { retrieved_snapshot }
 
-    describe 'the snapshot event source id' do
+    describe 'the snapshot message source id' do
       subject     { retrieved_snapshot.message_source_id }
       its(:id)    { should == snapshot.message_source_id.id }
       its(:type)  { should == snapshot.message_source_id.type }

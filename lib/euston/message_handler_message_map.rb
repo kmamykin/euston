@@ -1,7 +1,7 @@
 module Euston
   class MessageHandlerMessageMap
-    def initialize event_source_class
-      @event_source = event_source_class
+    def initialize message_source_class
+      @message_source = message_source_class
 
       @map = { initialization:  nil,
                commands:        {},
@@ -22,7 +22,7 @@ module Euston
       end
 
       if message.key? version
-        raise SubscriptionRedefinitionError, "Attempt made to redefine version #{version} of #{section.to_s.chop} :#{message_name} in event source #{@event_source}"
+        raise SubscriptionRedefinitionError, "Attempt made to redefine version #{version} of #{section.to_s.chop} :#{message_name} in message source #{@message_source}"
       end
 
       method_name = method_name_for_message message_name, version
@@ -40,7 +40,7 @@ module Euston
 
     def define_initializer &block
       unless @map[:initialization].nil?
-        raise InitializationRedefinitionError, "Attempt made to redefine the initialization block in event source #{@event_source}"
+        raise InitializationRedefinitionError, "Attempt made to redefine the initialization block in message source #{@message_source}"
       end
 
       @map[:initialization] = :defined
@@ -56,7 +56,7 @@ module Euston
       metadata = section[version]
 
       if metadata.has_key? action
-        raise SnapshotRedefinitionError, "Attempt made to redefine version #{version} of the snapshot :#{action} action in event source #{@event_source_class}"
+        raise SnapshotRedefinitionError, "Attempt made to redefine version #{version} of the snapshot :#{action} action in message source #{@message_source_class}"
       end
 
       method_name = method_name_for_snapshot action, version
@@ -71,7 +71,7 @@ module Euston
       [:commands, :events].each do |subscription_type|
         @map[subscription_type].each do |type, versions|
           versions.each do |version, metadata|
-            subscriptions[subscription_type] << { event_source: @event_source,
+            subscriptions[subscription_type] << { message_source: @message_source,
                                                   type:         type,
                                                   version:      version }
           end
@@ -117,7 +117,7 @@ module Euston
       versions = @map[:snapshots].keys
 
       if versions.empty?
-        raise UnknownSnapshotError, "Attempt to take snapshot when no snapshot methods are defined on event source #{@event_source}."
+        raise UnknownSnapshotError, "Attempt to take snapshot when no snapshot methods are defined on message source #{@message_source}."
       end
 
       version = versions.sort.pop
@@ -140,7 +140,7 @@ module Euston
             end
 
             unless found
-              raise UnverifiableMessageSource, "Failed to find version #{version} of the #{type} #{category[:section].to_s.singularize} referred to in message handler #{@event_source}."
+              raise UnverifiableMessageSource, "Failed to find version #{version} of the #{type} #{category[:section].to_s.singularize} referred to in message handler #{@message_source}."
             end
           end
         end
@@ -186,7 +186,7 @@ module Euston
     end
 
     def raise_not_found_error message_type, message_version
-      raise UnknownMessageError, "Event source #{@event_source} does not know this message: #{message_type} v#{message_version}."
+      raise UnknownMessageError, "Message source #{@message_source} does not know this message: #{message_type} v#{message_version}."
     end
   end
 end

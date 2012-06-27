@@ -1,5 +1,5 @@
-describe 'event source snapshots', :golf do
-  context 'with a event source that has no snapshot capability' do
+describe 'message source snapshots', :golf do
+  context 'with a message source that has no snapshot capability' do
     let(:history) do
       commit1 = Euston::Commit.new message_source_id: new_starter_message_source_id, events: [
         namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash
@@ -25,7 +25,7 @@ describe 'event source snapshots', :golf do
     it { should be_a Euston::UnknownSnapshotError }
   end
 
-  context 'with a event source that has a snapshot capability' do
+  context 'with a message source that has a snapshot capability' do
     let(:history) do
       commit1 = Euston::Commit.new message_source_id: new_secretary_message_source_id, events: [
         namespace::WarningIssuedForSlowPlay.v(1).new(player_id: :player_1).to_hash

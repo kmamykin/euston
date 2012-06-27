@@ -21,7 +21,7 @@ if Object.const_defined? 'RSpec'
     end
 
     failure_message_for_should do |actual|
-      "expected event source to have produced #{number} #{@attribute} but it actually produced #{get_value actual}"
+      "expected message source to have produced #{number} #{@attribute} but it actually produced #{get_value actual}"
     end
 
     def get_value actual

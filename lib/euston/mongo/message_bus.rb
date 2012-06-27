@@ -21,7 +21,7 @@ class MessageBus
 
   private
 
-  def build_event_source_handler handler_type, message, mapping
+  def build_message_source_handler handler_type, message, mapping
     identifier = message[:body][mapping[:identifier]] || handler_type.message_map.to_hash[:identifier] || Uuid.generate
     message_source_id = MessageSourceId.new identifier, handler_type
 
@@ -42,7 +42,7 @@ class MessageBus
     mapping = handler_type.message_map.get_mapping_for_message message
 
     handler = if handler_type.included_modules.include?(MessageSource)
-      build_event_source_handler(handler_type, message, mapping)
+      build_message_source_handler(handler_type, message, mapping)
     else
       handler_type.new
     end

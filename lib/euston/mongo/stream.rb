@@ -8,7 +8,7 @@ class Stream
     @snapshot_sequence = opts[:snapshot_sequence]
   end
 
-  # The event source that this stream represents
+  # The message source that this stream represents
   attr_reader :message_source_id
 
   # The sequence number of the most recent commit to this stream

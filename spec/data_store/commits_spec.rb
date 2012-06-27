@@ -150,44 +150,44 @@ describe 'mongo event store - commits', :golf, :mongo do
       data_store.put_commit commit_1_4
     end
 
-    context 'when the user requests all the commits for a particular event source' do
-      let(:commits_for_event_source_2) { data_store.find_commits message_source_id: message_source_id2 }
+    context 'when the user requests all the commits for a particular message source' do
+      let(:commits_for_message_source_2) { data_store.find_commits message_source_id: message_source_id2 }
 
-      subject { commits_for_event_source_2 }
+      subject { commits_for_message_source_2 }
       it      { should have(2).items }
 
       describe 'the first commit' do
-        subject   { commits_for_event_source_2[0] }
+        subject   { commits_for_message_source_2[0] }
         its(:id)  { should == commit_2_1.id }
       end
 
       describe 'the second commit' do
-        subject   { commits_for_event_source_2[1] }
+        subject   { commits_for_message_source_2[1] }
         its(:id)  { should == commit_2_2.id }
       end
     end
 
-    context 'when the user requests a range of commits for a particular event source' do
-      let(:commits_for_event_source_1) do
+    context 'when the user requests a range of commits for a particular message source' do
+      let(:commits_for_message_source_1) do
         data_store.find_commits message_source_id: message_source_id1, min_sequence: 2, max_sequence: 3
       end
 
-      subject { commits_for_event_source_1 }
+      subject { commits_for_message_source_1 }
       it      { should have(2).items }
 
       describe 'the first commit' do
-        subject   { commits_for_event_source_1[0] }
+        subject   { commits_for_message_source_1[0] }
         its(:id)  { should == commit_1_2.id }
       end
 
       describe 'the second commit' do
-        subject   { commits_for_event_source_1[1] }
+        subject   { commits_for_message_source_1[1] }
         its(:id)  { should == commit_1_3.id }
       end
     end
   end
 
-  context 'given an event store that contains a lot of commits for a single event source' do
+  context 'given an event store that contains a lot of commits for a single message source' do
     let(:message_source_id) { Factory.build(:message_source_id) }
 
     before do

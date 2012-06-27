@@ -39,9 +39,9 @@ module Euston
         klass.message_map.verify_message_classes @namespaces.commands, @namespaces.events
         subscriptions = klass.message_map.get_message_subscriptions
 
-        record_subscriptions message_handler[:category], subscriptions[:commands] do |subscription, message_type_map, discovered_version, discovered_event_source|
+        record_subscriptions message_handler[:category], subscriptions[:commands] do |subscription, message_type_map, discovered_version, discovered_message_source|
           if message_type_map.has_key? discovered_version
-            conflicting_classes = [message_type_map[discovered_version], discovered_event_source]
+            conflicting_classes = [message_type_map[discovered_version], discovered_message_source]
             raise SubscriptionRedefinitionError, "The following two command handlers are in conflict over who handles version #{subscription[:version]} of the #{subscription[:type]} command: #{conflicting_classes.join(', ')}"
           end
         end
@@ -66,12 +66,12 @@ module Euston
       subscriptions.each do |subscription|
         message_type_map = (@message_map[subscription[:type]] ||= {})
         discovered_version = subscription[:version]
-        discovered_event_source = subscription[:event_source]
+        discovered_message_source = subscription[:message_source]
 
-        yield subscription, message_type_map, discovered_version, discovered_event_source if block_given?
+        yield subscription, message_type_map, discovered_version, discovered_message_source if block_given?
 
         message_type_map[discovered_version] ||= []
-        message_type_map[discovered_version] << { category: category, handler: discovered_event_source }
+        message_type_map[discovered_version] << { category: category, handler: discovered_message_source }
       end
     end
 
@@ -84,7 +84,7 @@ module Euston
           mixins = klass.included_modules
 
           category = if mixins.include? Euston::MessageSource
-            :event_source
+            :message_source
           elsif mixins.include? Euston::CommandHandler
             :command_handler
           elsif mixins.include? Euston::EventHandler

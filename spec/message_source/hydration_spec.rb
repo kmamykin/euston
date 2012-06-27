@@ -1,6 +1,6 @@
-describe 'event source hydration', :golf do
-  context 'with a event source with no snapshot capability' do
-    context 'when the event source is loaded with history containing commits only' do
+describe 'message source hydration', :golf do
+  context 'with a message source with no snapshot capability' do
+    context 'when the message source is loaded with history containing commits only' do
       class Scenarios::GolfCourse::Scorer
         attr_reader :course_records
       end
@@ -21,7 +21,7 @@ describe 'event source hydration', :golf do
       it { should == course_record }
     end
 
-    context 'when the event source is loaded with history containing snapshots' do
+    context 'when the message source is loaded with history containing snapshots' do
       let(:exceptions)  { [] }
 
       let(:history) do
@@ -51,8 +51,8 @@ describe 'event source hydration', :golf do
     end
   end
 
-  context 'with a snapshotting event source' do
-    describe 'when the event source is loaded from a snapshot and no commits' do
+  context 'with a snapshotting message source' do
+    describe 'when the message source is loaded from a snapshot and no commits' do
       class Scenarios::GolfCourse::Secretary
         attr_reader :players_with_warnings
       end
@@ -72,7 +72,7 @@ describe 'event source hydration', :golf do
       its([:player_1]) { should == :foul_language }
     end
 
-    describe 'when the event source is loaded from a snapshot and an commit' do
+    describe 'when the message source is loaded from a snapshot and an commit' do
       let(:snapshot) do
         Euston::Snapshot.new message_source_id: new_secretary_message_source_id,
                              sequence: 1,

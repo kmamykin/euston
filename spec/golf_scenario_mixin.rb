@@ -10,7 +10,7 @@ module GolfScenarioMixin
     let(:player_id)                 { Uuid.generate }
     let(:time)                      { Time.now.utc + 1000 + rand(1000) }
 
-    def new_event_source_history type
+    def new_message_source_history type
       Euston::MessageSourceHistory.new id: course_id, type: type
     end
 
@@ -18,24 +18,24 @@ module GolfScenarioMixin
       Euston::MessageSourceId.new course_id, type
     end
 
-    def new_scorer_event_source_history
-      new_event_source_history namespace::Scorer
+    def new_scorer_message_source_history
+      new_message_source_history namespace::Scorer
     end
 
     def new_scorer_message_source_id
       new_message_source_id namespace::Scorer
     end
 
-    def new_secretary_event_source_history
-      new_event_source_history namespace::Secretary
+    def new_secretary_message_source_history
+      new_message_source_history namespace::Secretary
     end
 
     def new_secretary_message_source_id
       new_message_source_id namespace::Secretary
     end
 
-    def new_starter_event_source_history
-      new_event_source_history namespace::Starter
+    def new_starter_message_source_history
+      new_message_source_history namespace::Starter
     end
 
     def new_starter_message_source_id

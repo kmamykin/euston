@@ -30,7 +30,7 @@ describe 'mongo event store - scenario walkthrough', :golf, :mongo do
   its(:sequence)        { should == 2 }
   its(:version)         { should == 1 }
 
-  describe 'the snashot event source id' do
+  describe 'the snashot message source id' do
     subject { data_store.get_snapshot(@stream.message_source_id).message_source_id }
 
     its(:id)    { should == "george" }
