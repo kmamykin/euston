@@ -55,16 +55,6 @@ Gem::Specification.new do |s|
     spec/data_store/scenario_spec.rb
     spec/data_store/snapshots_spec.rb
     spec/event_handler_spec.rb
-    spec/event_source/command_invocation_spec.rb
-    spec/event_source/command_publishing_spec.rb
-    spec/event_source/command_subscription_spec.rb
-    spec/event_source/event_invocation_spec.rb
-    spec/event_source/event_subscription_spec.rb
-    spec/event_source/historical_versioning_spec.rb
-    spec/event_source/hydration_spec.rb
-    spec/event_source/snapshot_spec.rb
-    spec/event_source/state_transition_spec.rb
-    spec/event_source/transition_definitions_spec.rb
     spec/factories/book_tee_command.rb
     spec/factories/check_for_slow_play_command.rb
     spec/factories/commit.rb
@@ -73,6 +63,16 @@ Gem::Specification.new do |s|
     spec/factories/tee_booked_event.rb
     spec/global_message_handler_map_spec.rb
     spec/golf_scenario_mixin.rb
+    spec/message_source/command_invocation_spec.rb
+    spec/message_source/command_publishing_spec.rb
+    spec/message_source/command_subscription_spec.rb
+    spec/message_source/event_invocation_spec.rb
+    spec/message_source/event_subscription_spec.rb
+    spec/message_source/historical_versioning_spec.rb
+    spec/message_source/hydration_spec.rb
+    spec/message_source/snapshot_spec.rb
+    spec/message_source/state_transition_spec.rb
+    spec/message_source/transition_definitions_spec.rb
     spec/mongo_spec_mixin.rb
     spec/scenarios/golf_course/command_handlers/weather_station.rb
     spec/scenarios/golf_course/commands/book_tee.rb
@@ -82,9 +82,6 @@ Gem::Specification.new do |s|
     spec/scenarios/golf_course/commands/log_temperature.rb
     spec/scenarios/golf_course/commands/start_group.rb
     spec/scenarios/golf_course/event_handlers/email_queue.rb
-    spec/scenarios/golf_course/event_sources/scorer.rb
-    spec/scenarios/golf_course/event_sources/secretary.rb
-    spec/scenarios/golf_course/event_sources/starter.rb
     spec/scenarios/golf_course/events/course_record_broken.rb
     spec/scenarios/golf_course/events/group_playing_slowly.rb
     spec/scenarios/golf_course/events/round_completed.rb
@@ -94,6 +91,9 @@ Gem::Specification.new do |s|
     spec/scenarios/golf_course/events/tee_booking_cancelled.rb
     spec/scenarios/golf_course/events/tee_booking_rejected.rb
     spec/scenarios/golf_course/events/warning_issued_for_slow_play.rb
+    spec/scenarios/golf_course/message_sources/scorer.rb
+    spec/scenarios/golf_course/message_sources/secretary.rb
+    spec/scenarios/golf_course/message_sources/starter.rb
     spec/spec_helper.rb
   ]
   # = MANIFEST =
