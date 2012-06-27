@@ -56,7 +56,11 @@ module Euston
           @headers.merge! Marshal.load(Marshal.dump headers) unless headers.nil?
           @headers.merge! type: :#{message_type}, version: #{version}
 
-          @body = body || {}
+          @body = Marshal.load Marshal.dump(body || {})
+
+          validated_attributes = self.class._validators.map { |validator| validator[0] }.flatten.uniq.compact
+
+          @body.delete_if { |key, value| !validated_attributes.include? key }
         end
       EOC
 

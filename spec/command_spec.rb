@@ -17,7 +17,7 @@ describe 'commands' do
 
   context 'a valid command is created with no assigned metadata' do
     let(:command) { SomeExample.v(1).new xyz: xyz }
-    
+
     describe 'the headers' do
       subject { headers }
 
@@ -56,7 +56,7 @@ describe 'commands' do
 
   context 'an command is created with an invalid id and an invalid body' do
     let(:command)   { SomeExample.v(2).headers(id: 123).body }
-    
+
     describe 'validity' do
       subject { command.valid? }
 
@@ -72,5 +72,15 @@ describe 'commands' do
 
       its([:base])  { should == ["Id specified in the headers of a SomeExample message must be a string Uuid"] }
     end
+  end
+
+  context 'a command is created from a hash that has keys which do not match the attributes on the message' do
+    let(:command)   { SomeExample.v(2).new xyz: 1, abc: 2, nonono: 3 }
+
+    subject { command.to_hash[:body] }
+
+    its([:abc])     { should == 2 }
+    its([:nonono])  { should be_nil }
+    its([:xyz])     { should == 1 }
   end
 end
