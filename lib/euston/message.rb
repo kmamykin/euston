@@ -56,7 +56,7 @@ module Euston
           @headers.merge! Marshal.load(Marshal.dump headers) unless headers.nil?
           @headers.merge! type: :#{message_type}, version: #{version}
 
-          @body = Marshal.load Marshal.dump(body || {})
+          @body = (Marshal.load Marshal.dump(body || {})).symbolize_keys(true)
 
           validated_attributes = self.class._validators.map { |validator| validator[0] }.flatten.uniq.compact
 

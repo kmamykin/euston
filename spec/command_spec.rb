@@ -83,4 +83,14 @@ describe 'commands' do
     its([:nonono])  { should be_nil }
     its([:xyz])     { should == 1 }
   end
+
+  context 'a command is created from a hash that has stringy keys which should match the attributes on the message' do
+    let(:command)   { SomeExample.v(2).new 'xyz' => 1, 'abc' => 2 }
+
+    subject { command.to_hash[:body] }
+
+    its([:abc])     { should == 2 }
+    its([:xyz])     { should == 1 }
+  end
+
 end
