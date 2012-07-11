@@ -74,7 +74,10 @@ module Euston
 
         @message_source_history.commits.each do |commit|
           commit.events.each do |event|
-            call_state_change_function event[:headers][:type], event[:headers][:version], event[:headers], event[:body]
+            call_state_change_function event[:headers][:type],
+                                       event[:headers][:version],
+                                       event[:headers],
+                                       event[:body]
           end
         end
       end
