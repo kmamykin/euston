@@ -22,8 +22,8 @@ class ConcurrentOperation
 
   def mongo_error_types_for_current_ruby_platform
     @errors ||= begin
-      errors = [ ::Mongo::OperationFailure ]
-      errors.concat [::Mongo::MongoDBError, NativeException] if RUBY_PLATFORM.to_s == 'java'
+      errors = [ ::Mongo::MongoDBError ]
+      errors << NativeException if RUBY_PLATFORM.to_s == 'java'
       errors
     end
   end
