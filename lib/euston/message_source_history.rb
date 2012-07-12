@@ -27,7 +27,7 @@ module Euston
         end
       end
 
-      @type = opts[:type].to_s unless opts[:type].nil?
+      @type = opts[:type]
       @type = @snapshot.message_source_id.type unless @snapshot.nil?
       @type = @commits.last.message_source_id.type unless @commits.empty?
 

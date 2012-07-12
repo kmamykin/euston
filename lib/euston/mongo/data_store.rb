@@ -155,7 +155,7 @@ class DataStore
       end
       .execute do
         @commits.insert get_document_for_commit commit
-        increment_stream_position_after_commit commit.message_source_id, commit.sequence, commit.events.length
+        increment_stream_position_after_commit commit
       end
     end
   end
@@ -195,8 +195,9 @@ class DataStore
   def take_ownership_of_snapshottable_stream max_threshold, snapshotter_id
     ErrorHandler.wrap do
       new_streams_eligible_for_snapshotting = {
-        unsnapshotted: { '$gte' => max_threshold },
-        snapshotter_id: nil }
+        snapshottable: true,
+        snapshotter_id: nil,
+        unsnapshotted: { '$gte' => max_threshold } }
 
       streams_stuck_in_other_components = {
         unsnapshotted: { '$gte' => max_threshold },
@@ -328,13 +329,14 @@ class DataStore
                snapshot_sequence: document['snapshot_sequence']
   end
 
-  def increment_stream_position_after_commit message_source_id, sequence, unsnapshotted
+  def increment_stream_position_after_commit commit
     async_job do
-      id = { '_id' => get_document_id_hash_from_message_source_id(message_source_id) }
+      id = { '_id' => get_document_id_hash_from_message_source_id(commit.message_source_id) }
 
-      modifiers = { '$set' => { 'commit_sequence'   => sequence },
+      modifiers = { '$set' => { 'commit_sequence'   => commit.sequence,
+                                'snapshottable'     => commit.message_source_id.klass.message_map.has_snapshot_metadata? },
                     '$inc' => { 'snapshot_sequence' => 0,
-                                'unsnapshotted'     => unsnapshotted } }
+                                'unsnapshotted'     => commit.events.length } }
 
       @streams.update id, modifiers, upsert: true
     end
