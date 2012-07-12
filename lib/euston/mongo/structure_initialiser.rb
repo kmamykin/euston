@@ -47,8 +47,13 @@ class StructureInitialiser
     ], unique: true, name: 'commit_idempotence_by_origin'
 
     streams.ensure_index [
+      ['snapshottable', asc],
       ['unsnapshotted', asc]
     ], unique: false, name: 'unsnapshotted_streams'
+
+    streams.ensure_index [
+      ['snapshotter_id', asc]
+    ], unique: false, name: 'snapshotting_streams'
   end
 end
 
