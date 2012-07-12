@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'euston'
   s.version     = '2.0.0'
-  s.date        = '2012-06-27'
+  s.date        = '2012-07-12'
   s.platform    = RUBY_PLATFORM.to_s == 'java' ? 'java' : Gem::Platform::RUBY
   s.authors     = ['Lee Henson', 'Guy Boertje']
   s.email       = ['lee.m.henson@gmail.com', 'guyboertje@gmail.com']
@@ -58,7 +58,7 @@ Gem::Specification.new do |s|
     spec/factories/book_tee_command.rb
     spec/factories/check_for_slow_play_command.rb
     spec/factories/commit.rb
-    spec/factories/event_source_id.rb
+    spec/factories/message_source_id.rb
     spec/factories/snapshot.rb
     spec/factories/tee_booked_event.rb
     spec/global_message_handler_map_spec.rb
