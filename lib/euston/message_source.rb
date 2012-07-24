@@ -82,16 +82,18 @@ module Euston
         end
       end
 
-      def transition_to transition, version, body
+      def transition_to transition, version, headers, body = nil
         event_class = @message_class_finder.find_event transition, version
-        event = event_class.new body
+        headers, body = {}, headers if !headers.nil? && body.nil?
+        event = event_class.new headers, body
 
         unless event.valid?
           raise InvalidTransitionStateError, "Invalid attempt to transition to state #{transition} version #{version} in message source #{self.class}. Errors detected:\n\n#{event.errors.full_messages}"
         end
 
         @commit.store_event event
-        call_state_change_function transition, version, nil, body
+        event = event.to_hash
+        call_state_change_function transition, version, event[:headers], event[:body]
 
         self
       end
