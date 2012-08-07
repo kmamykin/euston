@@ -151,7 +151,7 @@ class DataStore
         raise DuplicateCommitError if !committed.nil? && committed['headers']['id'] == commit.id
       end
       .when(:other_error_detected) do |error|
-        raise StorageError, e.message, e.backtrace
+        raise StorageError, error.message, error.backtrace
       end
       .execute do
         @commits.insert get_document_for_commit commit
