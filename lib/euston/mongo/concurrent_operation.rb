@@ -12,7 +12,7 @@ class ConcurrentOperation
         callback :concurrency_error_detected, e
         raise ConcurrencyError
       else
-        callback :other_error_detected
+        callback :other_error_detected, e
         raise e
       end
     end
