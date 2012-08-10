@@ -117,7 +117,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'uuid',                    '~> 2.3.0'
   end
 
-  s.add_development_dependency 'awesome_print',         '~> 1.0.0'
+  s.add_development_dependency 'awesome_print',         '>= 1.0.0'
   s.add_development_dependency 'cranky',                '~> 0.3.1'
   s.add_development_dependency 'ffaker',                '~> 1.14.0'
   s.add_development_dependency 'fuubar',                '~> 1.0.0'
