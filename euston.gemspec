@@ -101,8 +101,8 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
 
-  s.add_dependency 'activemodel',               '~> 3.1.0'
-  s.add_dependency 'activesupport',             '~> 3.1.0'
+  s.add_dependency 'activemodel',               '>= 3.1.0'
+  s.add_dependency 'activesupport',             '>= 3.1.0'
   s.add_dependency 'enumeradical',              '~> 0.9.0'
   s.add_dependency 'hash-keys',                 '~> 1.0.0'
   s.add_dependency 'hollywood',                 '~> 1.0.0'
