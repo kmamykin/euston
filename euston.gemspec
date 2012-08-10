@@ -104,7 +104,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'activemodel',               '~> 3.1.0'
   s.add_dependency 'activesupport',             '~> 3.1.0'
   s.add_dependency 'enumeradical',              '~> 0.9.0'
-  s.add_dependency 'hash_symbolizer',           '~> 1.0.1'
+  s.add_dependency 'hash-keys',                 '~> 1.0.0'
   s.add_dependency 'hollywood',                 '~> 1.0.0'
 
   if RUBY_PLATFORM.to_s == 'java'

@@ -256,11 +256,11 @@ class DataStore
 
   def get_commit_from_document document
     Commit.new id:              document['headers']['id'],
-               commands:        document['body']['commands'].pluck(:symbolize_keys, true),
+               commands:        document['body']['commands'].pluck(:recursive_symbolize_keys!),
                duration:        document['headers']['duration'],
                message_source_id: get_message_source_id_from_document_id_hash(document),
-               events:          document['body']['events'].pluck(:symbolize_keys, true),
-               origin:          document['headers']['origin'].symbolize_keys(true),
+               events:          document['body']['events'].pluck(:recursive_symbolize_keys!),
+               origin:          document['headers']['origin'].recursive_symbolize_keys!,
                sequence:        document['_id']['sequence'],
                timestamp:       Time.at(document['headers']['timestamp']['as_float']).utc
   end
@@ -320,7 +320,7 @@ class DataStore
     Snapshot.new message_source_id: get_message_source_id_from_document_id_hash(document),
                  sequence:        document['_id']['sequence'],
                  version:         document['headers']['version'],
-                 body:            document['body'].symbolize_keys(true)
+                 body:            document['body'].recursive_symbolize_keys!
   end
 
   def get_stream_from_document document
