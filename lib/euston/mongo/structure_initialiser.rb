@@ -36,8 +36,7 @@ class StructureInitialiser
     commits.ensure_index [
       ['_id.id', asc],
       ['_id.type', asc],
-      ['_id.sequence', asc],
-      ['body.events.headers.sequence', asc]
+      ['_id.sequence', asc]
     ], unique: false, name: 'commits_by_event_sequence'
 
     commits.ensure_index [
