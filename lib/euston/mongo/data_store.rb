@@ -52,20 +52,9 @@ class DataStore
       end
 
       query = {
-        '$or' => [{
-            'body.events.headers.sequence' => {
-              '$gte' => options[:min_sequence],
-              '$lte' => options[:max_sequence] },
-          }, {
-            '_id.sequence' => {
-              '$gte' => options[:min_sequence],
-              '$lte' => options[:max_sequence] }
-        }],
-
-        'headers.timestamp.as_float' => {
-          '$gte' => options[:min_timestamp],
-          '$lte' => options[:max_timestamp]
-        }
+        '_id.sequence' => {
+          '$gte' => options[:min_sequence],
+          '$lte' => options[:max_sequence] }
       }
 
       if options.has_key? :message_source_id
@@ -73,7 +62,20 @@ class DataStore
         query['_id.type'] = options[:message_source_id].type
       end
 
-      map_over @commits.find(query, sort: order, batch_size: 100).to_a, :get_commit_from_document
+      if options[:min_timestamp] > 0 || options[:max_timestamp] < FIXNUM_MAX
+        query['headers.timestamp.as_float'] = { '$gte' => options[:min_timestamp], '$lte' => options[:max_timestamp] }
+      end
+
+      commits = map_over @commits.find(query, sort: order, batch_size: 100).to_a, :get_commit_from_document
+
+      unless commits.empty? || options[:min_sequence] == 0 || commits.first.sequence == options[:min_sequence]
+        query = { '_id.sequence' => { '$lt' => options[:min_sequence] } }
+        order = [ '_id.sequence', @descending ]
+        additional_commit = (map_over @commits.find(query, sort: order, limit: 1).to_a, :get_commit_from_document)[0]
+        commits.unshift additional_commit
+      end
+
+      commits
     end
   end
 

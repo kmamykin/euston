@@ -187,6 +187,42 @@ describe 'mongo event store - commits', :golf, :mongo do
     end
   end
 
+  context 'event an event store than contains a single message source with commits containing multiple events' do
+    let(:message_source_id)  { Factory.build(:message_source_id) }
+    let(:commit_1) { Factory.build :commit, message_source_id: message_source_id, sequence: 1 }
+    let(:commit_2) { Factory.build :commit, message_source_id: message_source_id, sequence: 3 }
+    let(:commit_3) { Factory.build :commit, message_source_id: message_source_id, sequence: 7 }
+    let(:commit_4) { Factory.build :commit, message_source_id: message_source_id, sequence: 9 }
+    let(:commit_5) { Factory.build :commit, message_source_id: message_source_id, sequence: 12 }
+
+    before do
+      data_store.put_commit commit_1
+      data_store.put_commit commit_2
+      data_store.put_commit commit_3
+      data_store.put_commit commit_4
+      data_store.put_commit commit_5
+    end
+
+    context 'when the user requests a range of commits for the message source' do
+      let(:commits_for_message_source) do
+        data_store.find_commits message_source_id: message_source_id, min_sequence: 4
+      end
+
+      subject { commits_for_message_source }
+      it      { should have(4).items }
+
+      describe 'the first commit' do
+        subject   { commits_for_message_source[0] }
+        its(:id)  { should == commit_2.id }
+      end
+
+      describe 'the fourth commit' do
+        subject   { commits_for_message_source[3] }
+        its(:id)  { should == commit_5.id }
+      end
+    end
+  end
+
   context 'given an event store that contains a lot of commits for a single message source' do
     let(:message_source_id) { Factory.build(:message_source_id) }
 
