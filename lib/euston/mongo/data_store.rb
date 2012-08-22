@@ -69,7 +69,7 @@ class DataStore
       commits = map_over @commits.find(query, sort: order, batch_size: 100).to_a, :get_commit_from_document
 
       unless commits.empty? || options[:min_sequence] == 0 || commits.first.sequence == options[:min_sequence]
-        query = { '_id.sequence' => { '$lt' => options[:min_sequence] } }
+        query['_id.sequence'] = { '$lt' => options[:min_sequence] }
         order = [ '_id.sequence', @descending ]
         additional_commit = (map_over @commits.find(query, sort: order, limit: 1).to_a, :get_commit_from_document)[0]
         commits.unshift additional_commit
