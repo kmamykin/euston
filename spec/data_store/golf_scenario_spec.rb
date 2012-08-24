@@ -1,4 +1,4 @@
-describe 'mongo event store - scenario walkthrough', :golf, :mongo do
+describe 'mongo event store - golf scenario walkthrough', :golf, :mongo do
   let(:global_message_handler_map)  { Euston::GlobalMessageHandlerMap.new namespaces }
   let(:message_bus)                 { Euston::Mongo::MessageBus.new message_class_finder, global_message_handler_map, data_store }
   let(:player_1)                    { Uuid.generate }
