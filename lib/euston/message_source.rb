@@ -51,12 +51,12 @@ module Euston
         @message_source_history.message_source_id.id
       end
 
-      def publish_command command
+      def publish_command command, opts = {}
         unless command.valid?
           raise InvalidCommandError, "An attempt was made to publish an invalid command from message source #{self.class}. Errors detected:\n\n#{command.errors.full_messages}"
         end
 
-        @commit.store_command command
+        @commit.store_command command, opts
 
         self
       end
@@ -85,13 +85,17 @@ module Euston
       def transition_to transition, version, headers, body = nil
         event_class = @message_class_finder.find_event transition, version
         headers, body = {}, headers if !headers.nil? && body.nil?
+
+        opts = {}
+        opts[:correlated] = headers.delete :correlated if headers.has_key? :correlated
+
         event = event_class.new headers, body
 
         unless event.valid?
           raise InvalidTransitionStateError, "Invalid attempt to transition to state #{transition} version #{version} in message source #{self.class}. Errors detected:\n\n#{event.errors.full_messages}"
         end
 
-        @commit.store_event event
+        @commit.store_event event, opts
         event = event.to_hash
         call_state_change_function transition, version, event[:headers], event[:body]
 

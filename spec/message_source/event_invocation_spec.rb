@@ -30,4 +30,19 @@ describe 'message source event invocation', :golf do
       end
     end
   end
+
+  context 'an event is consumed which contains correlation ids' do
+    let(:event)             { namespace::GroupPlayingSlowly.v(1).new(event_headers, event_body).to_hash }
+    let(:event_body)        { Factory.build(:group_playing_slowly_event).to_hash[:body] }
+    let(:event_headers)     { { correlations: [correlation_id_1, correlation_id_2] } }
+    let(:correlation_id_1)  { Uuid.generate }
+    let(:correlation_id_2)  { Uuid.generate }
+
+    before  { secretary(new_secretary_message_source_history).consume event }
+
+    subject { @commit.events[0][:headers] }
+
+    its([:correlations]) { should include correlation_id_1 }
+    its([:correlations]) { should include correlation_id_2 }
+  end
 end

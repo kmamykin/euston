@@ -32,6 +32,17 @@ class DataStore
     end
   end
 
+  def has_commits message_source_id
+    ErrorHandler.wrap do
+      query = {
+        '_id.id' => message_source_id.id,
+        '_id.type' => message_source_id.type
+      }
+
+      !@commits.find(query, limit: 1).to_a.empty?
+    end
+  end
+
   def find_commits options = {}
     ErrorHandler.wrap do
       options = {

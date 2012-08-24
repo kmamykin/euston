@@ -100,7 +100,7 @@ describe 'message source event subscription' do
       end
     end
 
-    context 'a single event subscription is defined for with an assigned identifier' do
+    context 'a single event subscription is defined with an assigned identifier' do
       class ESED4
         include Euston::MessageSource
 
@@ -126,6 +126,39 @@ describe 'message source event subscription' do
             subject { metadata[:events][:milk_bought][1] }
 
             its([:identifier])    { should == :abc }
+            its([:message_type])  { should == :event }
+            its([:message_class]) { should == 'MilkBought_v1' }
+          end
+        end
+      end
+    end
+
+    context 'a single event subscription is defined as holding the message source id in the correlations header' do
+      class ESED6
+        include Euston::MessageSource
+
+        events
+
+        milk_bought :correlated do; end
+      end
+
+      let(:metadata)  { ESED6.message_map.to_hash }
+
+      describe 'event metadata' do
+        subject { metadata[:events] }
+
+        it                  { should be_a Hash }
+        its([:milk_bought]) { should be_a Hash }
+
+        describe 'the milk_bought definition' do
+          subject { metadata[:events][:milk_bought] }
+
+          its([1]) { should be_a Hash }
+
+          describe 'version 1' do
+            subject { metadata[:events][:milk_bought][1] }
+
+            its([:identifier])    { should == :correlated }
             its([:message_type])  { should == :event }
             its([:message_class]) { should == 'MilkBought_v1' }
           end

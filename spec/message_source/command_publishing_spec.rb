@@ -66,4 +66,38 @@ describe 'message source command publishing', :golf do
 
     it { should have(1).item }
   end
+
+  context 'when the message source requests to hear about all events resulting from this command' do
+    class Scenarios::GolfCourse::MessageSourceWhichPublishesCommandsWithCorrelatedEventSubscriptions
+      include Euston::MessageSource
+
+      events
+
+      tee_booked :course_id do |headers, body|
+        publish_command Factory.build(:check_for_slow_play_command), correlated: true
+      end
+    end
+
+    let(:message_source) do
+      type = namespace::MessageSourceWhichPublishesCommandsWithCorrelatedEventSubscriptions
+      type.new(message_class_finder, new_message_source_history(type)).when(:commit_created) do |commit|
+        @commit = commit
+      end
+    end
+
+    let(:message) { namespace::TeeBooked.v(1).new(course_id: course_id, player_id: player_id, time: time).to_hash }
+
+    before { message_source.consume message }
+
+    subject { @commit }
+
+    its(:commands) { should have(1).item }
+
+    describe "the first published command's headers" do
+      subject { @commit.commands[0][:headers] }
+
+      its([:correlations]) { should have(1).item }
+      its([:correlations]) { should include course_id }
+    end
+  end
 end

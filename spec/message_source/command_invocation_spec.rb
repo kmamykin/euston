@@ -32,4 +32,19 @@ describe 'message source command invocation', :golf do
       end
     end
   end
+
+  context 'a command is consumed which contains correlation ids' do
+    let(:command)           { namespace::BookTee.v(1).new(command_headers, command_body).to_hash }
+    let(:command_body)      { Factory.build(:book_tee_command).to_hash[:body] }
+    let(:command_headers)   { { correlations: [correlation_id_1, correlation_id_2] } }
+    let(:correlation_id_1)  { Uuid.generate }
+    let(:correlation_id_2)  { Uuid.generate }
+
+    before { starter(new_starter_message_source_history).consume command }
+
+    subject { @commit.events[0][:headers] }
+
+    its([:correlations]) { should include correlation_id_1 }
+    its([:correlations]) { should include correlation_id_2 }
+  end
 end
