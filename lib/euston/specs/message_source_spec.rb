@@ -30,10 +30,29 @@ module Euston
         message_source_type.new message_class_finder, history
       end
 
+      let(:message_source_id) do
+        if @euston_incoming_messages.nil? || @euston_incoming_messages.empty?
+          Uuid.generate
+        else
+          message = @euston_incoming_messages.first
+          message = message.to_hash unless message.is_a? Hash
+          mapping = message_source_type.message_map.get_mapping_for_message message
+
+          if mapping.nil?
+            raise "Expected message source #{message_source_type} to handle message #{message[:headers][:type]} v#{message[:headers][:version]}."
+          elsif mapping[:identifier].nil?
+            Uuid.generate
+          elsif mapping[:identifier] == :correlated
+            message[:headers][:correlations].first
+          else
+            message[:body][mapping[:identifier]]
+          end
+        end
+      end
+
       let(:command_namespaces)          { [] }
       let(:euston_namespaces)           { Euston::Namespaces.new commands: command_namespaces, events: event_namespaces, message_handlers: message_handler_namespaces }
       let(:event_namespaces)            { [] }
-      let(:message_source_id)           { Uuid.generate }
       let(:full_message_source_id)      { Euston::MessageSourceId.new message_source_id, message_source_type }
       let(:message_class_finder)        { Euston::MessageClassFinder.new euston_namespaces }
       let(:message_handler_namespaces)  { [] }
@@ -61,7 +80,15 @@ module Euston
               hash = message.to_hash
               message_mapping = message_source_type.message_map.get_mapping_for_message hash
 
-              if !message_mapping[:identifier].blank? && hash[:body][message_mapping[:identifier]].blank?
+              if message_mapping[:identifier] == :correlated
+                unless hash[:headers][:correlations].is_a?(Array) && !hash[:headers][:correlations].empty?
+                  raise <<-EOS
+According to the message map for this message source type (#{message_source_type}), there should have been a message source id in the :correlations header of the following incoming message, but no such id was found:
+
+#{hash}
+EOS
+                end
+              elsif !message_mapping[:identifier].blank? && hash[:body][message_mapping[:identifier]].blank?
                 raise <<-EOS
 According to the message map for this message source type (#{message_source_type}), there should have been a message source id in the :#{message_mapping[:identifier]} field of the following incoming message, but no such id was found:
 
