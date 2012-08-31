@@ -65,6 +65,8 @@ class MessageBus
       [ handler_type.new ]
     end
 
+    last_exception = nil
+
     handlers.compact.each do |handler|
       begin
         handler.log = @log
@@ -74,7 +76,7 @@ class MessageBus
       end
     end
 
-    raise unless $!.nil?
+    raise last_exception unless last_exception.nil?
   end
 end
 
