@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'euston'
   s.version     = '2.0.0'
-  s.date        = '2012-07-12'
+  s.date        = '2012-09-01'
   s.platform    = RUBY_PLATFORM.to_s == 'java' ? 'java' : Gem::Platform::RUBY
   s.authors     = ['Lee Henson', 'Guy Boertje']
   s.email       = ['lee.m.henson@gmail.com', 'guyboertje@gmail.com']
@@ -52,12 +52,14 @@ Gem::Specification.new do |s|
     spec/command_spec.rb
     spec/constant_loader_spec.rb
     spec/data_store/commits_spec.rb
-    spec/data_store/scenario_spec.rb
+    spec/data_store/file_ingestion_scenario_spec.rb
+    spec/data_store/golf_scenario_spec.rb
     spec/data_store/snapshots_spec.rb
     spec/event_handler_spec.rb
     spec/factories/book_tee_command.rb
     spec/factories/check_for_slow_play_command.rb
     spec/factories/commit.rb
+    spec/factories/group_playing_slowly_event.rb
     spec/factories/message_source_id.rb
     spec/factories/snapshot.rb
     spec/factories/tee_booked_event.rb
@@ -74,6 +76,17 @@ Gem::Specification.new do |s|
     spec/message_source/state_transition_spec.rb
     spec/message_source/transition_definitions_spec.rb
     spec/mongo_spec_mixin.rb
+    spec/scenarios/file_ingestion/commands/ingest_file.rb
+    spec/scenarios/file_ingestion/commands/ingest_files.rb
+    spec/scenarios/file_ingestion/events/batch_ingested.rb
+    spec/scenarios/file_ingestion/events/batch_ingesting_file.rb
+    spec/scenarios/file_ingestion/events/batch_ingestion_failed.rb
+    spec/scenarios/file_ingestion/events/file_ingested.rb
+    spec/scenarios/file_ingestion/events/file_ingested_in_batch.rb
+    spec/scenarios/file_ingestion/events/file_ingestion_failed.rb
+    spec/scenarios/file_ingestion/events/file_ingestion_in_batch_failed.rb
+    spec/scenarios/file_ingestion/message_sources/batch.rb
+    spec/scenarios/file_ingestion/message_sources/single.rb
     spec/scenarios/golf_course/command_handlers/weather_station.rb
     spec/scenarios/golf_course/commands/book_tee.rb
     spec/scenarios/golf_course/commands/cancel_tee_booking.rb
