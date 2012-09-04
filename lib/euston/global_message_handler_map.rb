@@ -41,8 +41,8 @@ module Euston
 
         record_subscriptions message_handler[:category], subscriptions[:commands] do |subscription, message_type_map, discovered_version, discovered_message_source|
           if message_type_map.has_key? discovered_version
-            conflicting_classes = [message_type_map[discovered_version], discovered_message_source]
-            raise SubscriptionRedefinitionError, "The following two command handlers are in conflict over who handles version #{subscription[:version]} of the #{subscription[:type]} command: #{conflicting_classes.join(', ')}"
+            conflicting_classes = [message_type_map[discovered_version].map {|message| message[:handler]}, discovered_message_source].flatten
+            raise SubscriptionRedefinitionError, "The following two command handlers are in conflict over who handles version #{subscription[:version]} of the #{subscription[:type]} command: #{conflicting_classes.map(&:to_s).join(', ')}"
           end
         end
 
